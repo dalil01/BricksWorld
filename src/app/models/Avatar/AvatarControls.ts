@@ -14,6 +14,12 @@ import { Vars } from "../../../Vars";
 import TWEEN from "@tweenjs/tween.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 
+enum CONTROLS {
+	THIRD_PERSON,
+	FIRST_PERSON,
+	SCENE
+}
+
 export class AvatarControls {
 
 	private readonly avatar: Group;
@@ -43,10 +49,9 @@ export class AvatarControls {
 
 	private clock: Clock;
 
-	private cube;
+	private currentControls: CONTROLS = CONTROLS.THIRD_PERSON;
 
-
-	private firstPersonControl: boolean = false;
+	private firstPersonPoint;
 	private firstPersonControls!: PointerLockControls;
 
 	public constructor(model: Group, animations: AnimationClip[]) {
@@ -79,14 +84,15 @@ export class AvatarControls {
 			}
 		}
 
-		this.cube = this.avatar.children.find((child) => child.name == "Cube")
+		this.firstPersonPoint = this.avatar.children.find((child) => child.name == "FirstPersonPoint")
 
 		this.firstPersonControls = new PointerLockControls(Experience.get().getCameraManager().getCamera(), document.body);
 		this.firstPersonControls.minPolarAngle = .3;
 		this.firstPersonControls.maxPolarAngle = 3;
-		this.firstPersonControls.addEventListener('unlock', () => {
-			this.toggleControl();
+		this.firstPersonControls.addEventListener("unlock", () => {
+			this.switchToThirdPersonControls();
 		});
+
 		Experience.get().getScene().add(this.firstPersonControls.getObject());
 
 		if (Vars.DEBUG_MODE) {
@@ -126,11 +132,10 @@ export class AvatarControls {
 
 		this.animationMixer.update(delta);
 
-
 		if (this.walkAnimationPlaying || this.runAnimationPlaying) {
-			if (this.firstPersonControl) {
+			if (this.currentControls === CONTROLS.FIRST_PERSON) {
 				const p = new Vector3();
-				this.cube.getWorldPosition(p);
+				this.firstPersonPoint.getWorldPosition(p);
 
 				const cameraDirection = new Vector3();
 				this.camera.getWorldDirection(cameraDirection);
@@ -163,7 +168,7 @@ export class AvatarControls {
 				this.avatar.position.z += moveZ;
 
 				const p2 = new Vector3()
-				this.cube.getWorldPosition(p2);
+				this.firstPersonPoint.getWorldPosition(p2);
 
 				this.camera.position.copy(p);
 
@@ -244,6 +249,18 @@ export class AvatarControls {
 	}
 
 	private onKeyDown(ev: KeyboardEvent): void {
+		if (ev.key === '1') {
+			this.switchToFirstPersonControl();
+		} else if (ev.key === '2') {
+			this.switchToThirdPersonControls();
+		} else if (ev.key === '3') {
+			this.switchToSceneControls();
+		}
+
+		if (this.currentControls === CONTROLS.SCENE) {
+			return;
+		}
+
 		(this.keysPressed as any)[ev.key.toUpperCase()] = true;
 
 		if (this.jumpAnimation && ev.code === "Space") {
@@ -264,9 +281,6 @@ export class AvatarControls {
 			this.playWalkAnimation();
 		}
 
-		if (ev.key === 'c') {
-			this.toggleControl();
-		}
 	}
 
 	private onKeyUp(ev: KeyboardEvent): void {
@@ -283,9 +297,9 @@ export class AvatarControls {
 	}
 
 	private onMouseMove(): void {
-		if (this.firstPersonControl && !this.walkAnimationPlaying && !this.runAnimationPlaying) {
+		if (this.currentControls === CONTROLS.FIRST_PERSON && !this.walkAnimationPlaying && !this.runAnimationPlaying) {
 			const p = new Vector3();
-			this.cube.getWorldPosition(p);
+			this.firstPersonPoint.getWorldPosition(p);
 
 			const cameraDirection = new Vector3();
 			this.camera.getWorldDirection(cameraDirection);
@@ -300,7 +314,7 @@ export class AvatarControls {
 			this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
 
 			const p2 = new Vector3()
-			this.cube.getWorldPosition(p2);
+			this.firstPersonPoint.getWorldPosition(p2);
 
 			this.camera.position.copy(p);
 		}
@@ -372,36 +386,65 @@ export class AvatarControls {
 		this.controls.update();
 	}
 
-	private toggleControl(): void {
-		this.firstPersonControl = !this.firstPersonControl;
-		if (this.firstPersonControl) {
-			const p = new Vector3();
-			this.cube.getWorldPosition(p)
-
-			console.log(p, this.cube)
-
-			this.camera.position.copy(p);
-
-
-			this.firstPersonControls.lock();
-		} else {
+	private switchToThirdPersonControls(): void {
+		if (this.currentControls === CONTROLS.FIRST_PERSON) {
 			this.firstPersonControls.unlock();
-
-			const targetCameraPosition = new Vector3();
-			targetCameraPosition.x = this.avatar.position.x;
-			targetCameraPosition.y = this.avatar.position.y + 7;
-			targetCameraPosition.z = this.avatar.position.z + 10;
-
-			this.camera.position.copy(targetCameraPosition)
-
-			const targetControlsPosition = new Vector3();
-			targetControlsPosition.x = this.avatar.position.x;
-			targetControlsPosition.y = this.avatar.position.y + 3;
-			targetControlsPosition.z = this.avatar.position.z;
-
-			this.controls.target.copy(targetControlsPosition);
-			this.controls.update()
 		}
+
+		const targetCameraPosition = new Vector3();
+		targetCameraPosition.x = this.avatar.position.x;
+		targetCameraPosition.y = this.avatar.position.y + 7;
+		targetCameraPosition.z = this.avatar.position.z + 10;
+
+		this.camera.position.copy(targetCameraPosition)
+
+		const targetControlsPosition = new Vector3();
+		targetControlsPosition.x = this.avatar.position.x;
+		targetControlsPosition.y = this.avatar.position.y + 3;
+		targetControlsPosition.z = this.avatar.position.z;
+
+		this.controls.target.copy(targetControlsPosition);
+		this.controls.update();
+
+		this.currentControls = CONTROLS.THIRD_PERSON;
+	}
+
+	private switchToFirstPersonControl(): void {
+		const p = new Vector3();
+		this.firstPersonPoint.getWorldPosition(p)
+
+		this.camera.position.copy(p);
+
+		this.firstPersonControls.lock();
+
+		this.currentControls = CONTROLS.FIRST_PERSON;
+	}
+
+	private switchToSceneControls(): void {
+		// TODO : refacto - it's not that avatar responsibility
+
+		if (this.currentControls === CONTROLS.FIRST_PERSON) {
+			this.firstPersonControls.unlock();
+		}
+
+		const scene = Experience.get().getScene();
+
+		const targetCameraPosition = new Vector3();
+		targetCameraPosition.x = scene.position.x - 50;
+		targetCameraPosition.y = scene.position.y + 30;
+		targetCameraPosition.z = scene.position.z - 40;
+
+		this.camera.position.copy(targetCameraPosition)
+
+		const targetControlsPosition = new Vector3();
+		targetControlsPosition.x = scene.position.x;
+		targetControlsPosition.y = scene.position.y + 3;
+		targetControlsPosition.z = scene.position.z;
+
+		this.controls.target.copy(targetControlsPosition);
+		this.controls.update();
+
+		this.currentControls = CONTROLS.SCENE;
 	}
 
 	private initHelpers(): void {
