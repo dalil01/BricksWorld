@@ -273,7 +273,7 @@ export class AvatarControls {
 			}
 
 			this.playRunAnimation();
-		} else if (!this.walkAnimationPlaying && (ev.key === 'z' || ev.key === 's')) {
+		} else if (!this.walkAnimationPlaying && this.isMoveKey(ev.key)) {
 			if (this.runAnimationPlaying) {
 				this.stopRunAnimation();
 			}
@@ -291,9 +291,10 @@ export class AvatarControls {
 			this.playWalkAnimation();
 		}
 
-		if (this.walkAnimationPlaying && (ev.key === 'z' || ev.key === 's')) {
+		if (this.walkAnimationPlaying && !this.isMovingKeyPressed()) {
 			this.stopWalkAnimation();
 		}
+
 	}
 
 	private onMouseMove(): void {
@@ -318,6 +319,14 @@ export class AvatarControls {
 
 			this.camera.position.copy(p);
 		}
+	}
+
+	private isMoveKey(key: string): boolean {
+		return key === 'z' || key === 'q' || key === 's' || key === 'd';
+	}
+
+	private isMovingKeyPressed(): boolean {
+		return this.keysPressed['Z'] || this.keysPressed['Q'] || this.keysPressed['S'] || this.keysPressed['D'];
 	}
 
 	private playWalkAnimation(): void {

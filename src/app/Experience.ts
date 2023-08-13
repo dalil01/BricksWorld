@@ -33,7 +33,7 @@ export class Experience {
 	private readonly modelManager: ModelManager;
 
 	private readonly cameraManager: CameraManager;
-	private camera!: PerspectiveCamera;
+	private readonly camera!: PerspectiveCamera;
 	private controls!: OrbitControls;
 
 	private readonly clock: Clock;
@@ -114,7 +114,7 @@ export class Experience {
 			map.receiveShadow = true;
 			map.position.y = 0;
 			map.rotation.x = -Math.PI / 2;
-			this.scene.add(map);
+			//this.scene.add(map);
 
 			this.viewManager.start();
 			this.modelManager.start();

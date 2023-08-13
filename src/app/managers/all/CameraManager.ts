@@ -13,7 +13,7 @@ export class CameraManager extends Manager {
 
 	public constructor(sizes: Sizes, canvas: HTMLElement) {
 		super();
-		this.camera = new PerspectiveCamera(45, sizes.w / sizes.h, 0.1, 1000);
+		this.camera = new PerspectiveCamera(45, sizes.w / sizes.h, 0.1, 500);
 		this.controls = new OrbitControls(this.camera, canvas);
 	}
 

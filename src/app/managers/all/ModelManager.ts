@@ -3,14 +3,17 @@ import { Scene } from "three";
 import { Experience, Sizes } from "../../Experience";
 import { Manager } from "../Manager";
 import { Sky } from "../../models/sky/Sky";
+import { Sea } from "../../models/Sea/Sea";
 
 export class ModelManager extends Manager {
 
+	private readonly sea: Sea;
 	private readonly sky: Sky;
 	private readonly avatar: Avatar;
 
 	public constructor() {
 		super();
+		this.sea = new Sea();
 		this.sky = new Sky();
 		this.avatar = new Avatar();
 	}
@@ -32,6 +35,7 @@ export class ModelManager extends Manager {
 	}
 
 	public async load(scene: Scene): Promise<void> {
+		await this.sea.load(scene);
 		await this.sky.load(scene);
 		await this.avatar.load(scene);
 	}

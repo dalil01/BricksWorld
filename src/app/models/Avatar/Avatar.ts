@@ -31,9 +31,7 @@ export class Avatar extends Model {
 				this.controls = new AvatarControls(this.model, gltf.animations);
 
 				scene.add(gltf.scene);
-				console.log(gltf)
-
-
+				console.log(this.model)
 
 				this.controls.init();
 				this.lights.init(scene);

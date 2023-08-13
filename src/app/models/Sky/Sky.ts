@@ -21,7 +21,6 @@ export class Sky extends Model {
 		this.data = new SkyData();
 	}
 
-
 	public override init(): void {
 		this.sky.position.set(0, 0, 0);
 		this.sky.scale.setScalar(3000);
@@ -53,7 +52,6 @@ export class Sky extends Model {
 		const boundingBoxHelper = new THREE.Box3Helper(boundingBox, new THREE.Color(0xffff00));
 		scene.add(boundingBoxHelper);
 
-
 		const GUIFolder = Experience.get().getLilGUI().addFolder("Sky")
 		GUIFolder.add(this.data, "turbidity", 0.0, 20.0, 0.1).onChange(() => this.onChanged());
 		GUIFolder.add(this.data, "rayleigh", 0.0, 4, 0.001).onChange(() => this.onChanged());
@@ -64,7 +62,7 @@ export class Sky extends Model {
 		GUIFolder.add(this.data, "exposure", 0, 1, 0.0001).onChange(() => this.onChanged());
 	}
 
-	public onChanged(): void {
+	private onChanged(): void {
 		const uniforms = this.sky.material.uniforms;
 		uniforms["turbidity"].value = this.data.turbidity;
 		uniforms["rayleigh"].value = this.data.rayleigh;
