@@ -108,14 +108,6 @@ export class Experience {
 
 	public init(): void {
 		this.modelManager.load(this.scene).then(() => {
-			const geometry = new THREE.PlaneGeometry(512, 512);
-			const material = new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false });
-			const map = new THREE.Mesh(geometry, material);
-			map.receiveShadow = true;
-			map.position.y = 0;
-			map.rotation.x = -Math.PI / 2;
-			//this.scene.add(map);
-
 			this.viewManager.start();
 			this.modelManager.start();
 			this.cameraManager.start();

@@ -1,6 +1,7 @@
 const MODELS_DIR = "models/";
 const AVATAR_DIR = MODELS_DIR + "avatar/";
 const SEA_DIR = MODELS_DIR + "sea/";
+const ISLAND_DIR = MODELS_DIR + "island/";
 
 export class Vars {
 
@@ -11,6 +12,9 @@ export class Vars {
 		},
 		SEA: {
 			MODEL: SEA_DIR + "Sea.glb"
+		},
+		ISLAND: {
+			PALM_MODEL: ISLAND_DIR + "Palm.glb"
 		}
 	};
 

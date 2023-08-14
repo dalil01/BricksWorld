@@ -27,6 +27,7 @@ export class Sea extends Model {
 
 				scene.add(this.model);
 
+				this.applyMaterialColor();
 				this.generateGridClones();
 
 				if (Vars.DEBUG_MODE) {
@@ -45,9 +46,10 @@ export class Sea extends Model {
 	}
 
 	public applyMaterialColor(): void {
+		const color = new Color(this.data.color);
 		this.model.traverse((child) => {
 			if (child.material) {
-				child.material.color = new Color(this.data.color);
+				child.material.color = color;
 			}
 		});
 	}
