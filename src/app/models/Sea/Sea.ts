@@ -25,7 +25,7 @@ export class Sea extends Model {
 			UModelLoader.loadGLTF(Vars.PATH.SEA.MODEL, (gltf: GLTF) => {
 				this.model = gltf.scene;
 
-				scene.add(this.model);
+				//scene.add(this.model);
 
 				this.applyMaterialColor();
 				this.generateGridClones();

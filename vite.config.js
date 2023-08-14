@@ -1,4 +1,6 @@
 import gltfPlugin from "vite-plugin-gltf";
+import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 export default {
     base: './',
@@ -26,6 +28,8 @@ export default {
         }
     },
     plugins: [
-        gltfPlugin()
+        gltfPlugin(),
+        wasm(),
+        topLevelAwait()
     ]
 }

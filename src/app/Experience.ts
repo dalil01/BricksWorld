@@ -14,6 +14,7 @@ import * as THREE from "three";
 import GUI from "lil-gui";
 import { ViewManager } from "./managers/all/ViewManager";
 import { Vars } from "../Vars";
+import { PhysicsManager } from "./managers/all/PhysicsManager";
 
 export type Sizes = {
 	w: number;
@@ -29,6 +30,7 @@ export class Experience {
 
 	private readonly renderer: WebGLRenderer;
 
+	private readonly physicsManager: PhysicsManager;
 	private readonly viewManager: ViewManager;
 	private readonly modelManager: ModelManager;
 
@@ -38,6 +40,7 @@ export class Experience {
 
 	private readonly clock: Clock;
 
+	// TODO : https://github.com/pmndrs/leva
 	private readonly lilGUI!: GUI;
 
 
@@ -52,6 +55,7 @@ export class Experience {
 		this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		this.renderer.toneMappingExposure = 0.5;
 
+		this.physicsManager = new PhysicsManager();
 		this.viewManager = new ViewManager();
 		this.modelManager = new ModelManager();
 		this.cameraManager = new CameraManager(this.sizes, this.renderer.domElement);
@@ -86,6 +90,10 @@ export class Experience {
 		return this.renderer;
 	}
 
+	public getPhysicsManager(): PhysicsManager {
+		return this.physicsManager;
+	}
+
 	public getCameraManager(): CameraManager {
 		return this.cameraManager;
 	}
@@ -107,21 +115,23 @@ export class Experience {
 	}
 
 	public init(): void {
-		this.modelManager.load(this.scene).then(() => {
-			this.viewManager.start();
-			this.modelManager.start();
-			this.cameraManager.start();
+		this.physicsManager.start().then(() => {
+			this.modelManager.load(this.scene).then(() => {
+				this.viewManager.start();
+				this.modelManager.start();
+				this.cameraManager.start();
 
-			this.scene.add(this.camera);
-			document.body.appendChild(this.renderer.domElement);
+				this.scene.add(this.camera);
+				document.body.appendChild(this.renderer.domElement);
 
-			this.onResize();
-			this.subscribeToEventListeners();
-			this.renderer.setAnimationLoop(() => this.animate());
+				this.onResize();
+				this.subscribeToEventListeners();
+				this.renderer.setAnimationLoop(() => this.animate());
 
-			if (Vars.DEBUG_MODE) {
-				this.initHelpers();
-			}
+				if (Vars.DEBUG_MODE) {
+					this.initHelpers();
+				}
+			});
 		});
 	}
 
@@ -152,6 +162,7 @@ export class Experience {
 	}
 
 	private animate(): void {
+		this.physicsManager.animate();
 		this.cameraManager.update();
 		this.modelManager.animate();
 		TWEEN.update();

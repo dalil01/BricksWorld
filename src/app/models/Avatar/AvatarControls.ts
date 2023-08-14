@@ -127,11 +127,26 @@ export class AvatarControls {
 		this.controls.update();
 	}
 
+	lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
+	private storedFall = 0;
+
+	private ray;
+	private rigidBody;
+	private world;
+
+	public setPhysicsData(ray, rigidBody, world): void {
+		this.ray = ray;
+		this.rigidBody = rigidBody;
+		this.world = world;
+	}
+
 	public animate(): void {
 		const delta = this.clock.getDelta();
 
 		this.animationMixer.update(delta);
+		this.walkDirection.x = this.walkDirection.y = this.walkDirection.z = 0
 
+		let velocity = 0;
 		if (this.walkAnimationPlaying || this.runAnimationPlaying) {
 			if (this.currentControls === CONTROLS.FIRST_PERSON) {
 				const p = new Vector3();
@@ -195,18 +210,76 @@ export class AvatarControls {
 			this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
 
 			// Run/Walk velocity
-			const velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
+			velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
+			//const velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
 
 			// Move avatar & camera
 			const moveX = this.walkDirection.x * velocity * delta;
 			const moveZ = this.walkDirection.z * velocity * delta;
 
-			this.avatar.position.x += moveX;
-			this.avatar.position.z += moveZ;
+			//this.avatar.position.x += moveX;
+			//this.avatar.position.z += moveZ;
 
 
-			this.updateCameraTarget(moveX, moveZ);
+			//this.updateCameraTarget(moveX, moveZ);
 		}
+
+
+		const translation = this.rigidBody.translation();
+		if (translation.y < -1) {
+			// don't fall below ground
+			this.rigidBody.setNextKinematicTranslation({
+				x: 0,
+				y: 10,
+				z: 0
+			});
+		} else {
+			const cameraPositionOffset = this.camera.position.sub(this.avatar.position);
+			// update model and camera
+			this.avatar.position.x = translation.x
+			this.avatar.position.y = translation.y
+			this.avatar.position.z = translation.z
+			this.updateCameraTarget2(cameraPositionOffset)
+
+			this.walkDirection.y += this.lerp(this.storedFall, -9.82 * delta, 0.10)
+			this.storedFall = this.walkDirection.y
+
+			this.ray.origin.x = translation.x
+			this.ray.origin.y = translation.y
+			this.ray.origin.z = translation.z
+			let hit = this.world.castRay(this.ray, 0.5, false, 0xfffffffff);
+			if (hit) {
+				const point = this.ray.pointAt(hit.toi);
+				let diff = translation.y - ( point.y + 0.28);
+				if (diff < 0.0) {
+					this.storedFall = 0
+					this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5)
+				}
+			}
+
+			this.walkDirection.x = this.walkDirection.x * velocity * delta
+			this.walkDirection.z = this.walkDirection.z * velocity * delta
+
+			this.rigidBody.setNextKinematicTranslation( {
+				x: translation.x + this.walkDirection.x,
+				y: translation.y + this.walkDirection.y,
+				z: translation.z + this.walkDirection.z
+			});
+		}
+	}
+
+	private updateCameraTarget2(offset: Vector3) {
+		// move camera
+		const rigidTranslation = this.rigidBody.translation();
+		this.camera.position.x = rigidTranslation.x + offset.x
+		this.camera.position.y = rigidTranslation.y + offset.y
+		this.camera.position.z = rigidTranslation.z + offset.z
+
+		// update camera target
+		this.cameraTarget.x = rigidTranslation.x
+		this.cameraTarget.y = rigidTranslation.y + 1
+		this.cameraTarget.z = rigidTranslation.z
+		this.controls.target = this.cameraTarget
 	}
 
 	public moveCameraToDefaultWorldView(): void {
