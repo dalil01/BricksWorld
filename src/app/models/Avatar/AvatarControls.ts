@@ -153,8 +153,6 @@ export class AvatarControls {
 
 		let velocity = 0;
 		if (this.walkAnimationPlaying || this.runAnimationPlaying) {
-			console.log("oko")
-
 			if (this.currentControls === CONTROLS.FIRST_PERSON) {
 				const p = new Vector3();
 				this.firstPersonPoint.getWorldPosition(p);
@@ -254,10 +252,10 @@ export class AvatarControls {
 			this.ray.origin.x = translation.x
 			this.ray.origin.y = translation.y
 			this.ray.origin.z = translation.z
-			let hit = this.world.castRay(this.ray, 0.5, false, 0xfffffffff);
+			let hit = this.world.castRay(this.ray, .5, false, 0xfffffffff);
 			if (hit) {
 				const point = this.ray.pointAt(hit.toi);
-				let diff = translation.y - (point.y + 0.28);
+				let diff = translation.y - (point.y + 0.2);
 				if (diff < 0.0) {
 					this.storedFall = 0
 					this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5)
@@ -412,7 +410,7 @@ export class AvatarControls {
 	}
 
 	private isMovingKeyPressed(): boolean {
-		return this.keysPressed['Z'] || this.keysPressed['Q'] || this.keysPressed['S'] || this.keysPressed['D'];
+		return this.keysPressed['z'] || this.keysPressed['q'] || this.keysPressed['s'] || this.keysPressed['d'];
 	}
 
 	private playWalkAnimation(): void {

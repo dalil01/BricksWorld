@@ -40,9 +40,9 @@ export class Avatar extends Model {
 				const rapier = physics.getRapier();
 				const world = physics.getWorld();
 
-				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(-1, 3, 1);
+				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(-1, 1, 1);
 				const rigidBody = world.createRigidBody(bodyDesc);
-				const dynamicCollider = rapier.ColliderDesc.ball(0.9);
+				const dynamicCollider = rapier.ColliderDesc.ball(0.2);
 				world.createCollider(dynamicCollider, rigidBody.handle);
 
 				//physics.addBody({ collider: dynamicCollider, rigid: rigidBody, mesh: this.model})
