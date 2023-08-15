@@ -2,7 +2,7 @@ import { Model } from "../Model";
 import {
 	BoxGeometry, ConeGeometry,
 	CylinderGeometry, Euler,
-	Mesh, MeshPhongMaterial,
+	Mesh, MeshBasicMaterial, MeshPhongMaterial,
 	MeshStandardMaterial, Object3D,
 	PlaneGeometry, Quaternion,
 	Scene,
@@ -23,6 +23,7 @@ import {
 	TriMesh,
 	RigidBody
 } from '@dimforge/rapier3d';
+import { Body } from "../../managers/all/PhysicsManager";
 
 export class Island extends Model {
 
@@ -39,7 +40,7 @@ export class Island extends Model {
 			UModelLoader.loadGLTF(Vars.PATH.ISLAND.PALM_MODEL, (gltf: GLTF) => {
 				this.model = gltf.scene;
 
-				//scene.add(this.model);
+				scene.add(this.model);
 
 
 				const physics = Experience.get().getPhysicsManager();
@@ -48,7 +49,6 @@ export class Island extends Model {
 
 				console.log("Island", this.model)
 
-				/*
 				const modelInfos  = this.extractVertexPositionsFromGLBModel(this.model);
 				console.log(modelInfos )
 
@@ -66,7 +66,7 @@ export class Island extends Model {
 					world.createCollider(floorCollider, floorRigidBody.handle);
 				}
 
-				 */
+
 
 
 
@@ -79,12 +79,11 @@ export class Island extends Model {
 				const boxRigidBodyDesc = rapier.RigidBodyDesc.fixed();
 				boxRigidBodyDesc.setCanSleep(false);
 				const boxRigidBody = world.createRigidBody(boxRigidBodyDesc);
-				const boxCollider =rapier.ColliderDesc.cuboid(50, 50, 50);
+				const boxCollider =rapier.ColliderDesc.cuboid(2, 2, 2);
 
-				// Ajoutez le corps rigide au monde Rapier
 				world.createCollider(boxCollider, boxRigidBody.handle);
-
-				physics.addBody({ rigid: boxRigidBody, mesh: cube  })
+//
+		physics.addBody({ collider: boxCollider, rigid: boxRigidBody, mesh: cube  })
 
 
 
@@ -93,7 +92,7 @@ export class Island extends Model {
 							  colliderType: 'cube' | 'sphere' | 'cylinder' | 'cone', dimension: any,
 							  translation: { x: number, y: number, z: number },
 							  rotation: { x: number, y: number, z: number },
-							  color: string): { rigid: RigidBody, mesh: Mesh } {
+							  color: string): Body {
 
 					let bodyDesc
 
@@ -150,30 +149,22 @@ export class Island extends Model {
 					threeMesh.receiveShadow = true;
 					scene.add(threeMesh);
 
-					return { rigid: rigidBody, mesh: threeMesh };
+					return { collider, rigid: rigidBody, mesh: threeMesh };
 				}
 
-				const cubeDimension = {
-					hx: 1.0,  // Moitié de la largeur en mètres
-					hy: 0.1,  // Moitié de la hauteur en mètres
-					hz: 1.0   // Moitié de la profondeur en mètres
-				};
+				let scale = new rapier.Vector3(30.0, 3.0, 30.0);
 
-				const coneDimension = {
-					hh: 0.5,  // Hauteur du cône en mètres
-					radius: 0.5  // Rayon du cône en mètres
-				};
-
-// Utilisez les dimensions et positions en mètres, pas d'échelle de rendu ici
-				const staticB = body(scene, world, 'dynamic', 'cube',
-					cubeDimension, { x: 0, y: 2.5, z: 0 }, { x: 0, y: 0, z: 0 }, 'pink');
+				const staticB = body(scene, world, 'static', 'cube',
+					{ hx: 10, hy: 1, hz: 10 }, { x: scale.x / 2, y: 2.5, z: 0 },
+					{ x: 0, y: 0, z: 1.2 }, 'pink');
 				physics.addBody(staticB);
 
-				const coneBody = body(scene, world, 'dynamic', 'cone',
-					coneDimension, { x: 7, y: 15, z: -8 }, { x: 0, y: 1, z: 0 }, 'purple');
-				physics.addBody(coneBody);
+				const cubeBody = body(scene, world, 'dynamic', 'cube',
+					{ hx: 1, hy: 1, hz: 1 }, { x: 0, y: 15, z: 0 },
+					{ x: 0, y: 0.4, z: 0.7 }, 'orange');
+				physics.addBody(cubeBody);
 
-
+				console.log("dd",cubeBody)
 
 				resolve();
 			}, undefined, () => reject());
@@ -206,10 +197,7 @@ export class Island extends Model {
 		const vertexPositions: { vertices: Float32Array, indices: Uint32Array }[] = [];
 
 		glbModel.traverse((child) => {
-
 			if (child instanceof Mesh) {
-				console.log(child.name)
-
 				const geometry = child.geometry;
 				geometry.computeVertexNormals();
 

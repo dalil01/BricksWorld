@@ -15,6 +15,7 @@ import GUI from "lil-gui";
 import { ViewManager } from "./managers/all/ViewManager";
 import { Vars } from "../Vars";
 import { PhysicsManager } from "./managers/all/PhysicsManager";
+import { EventManager } from "./managers/all/EventManager";
 
 export type Sizes = {
 	w: number;
@@ -30,6 +31,7 @@ export class Experience {
 
 	private readonly renderer: WebGLRenderer;
 
+	private readonly eventManager: EventManager;
 	private readonly physicsManager: PhysicsManager;
 	private readonly viewManager: ViewManager;
 	private readonly modelManager: ModelManager;
@@ -55,6 +57,7 @@ export class Experience {
 		this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		this.renderer.toneMappingExposure = 0.5;
 
+		this.eventManager = new EventManager();
 		this.physicsManager = new PhysicsManager();
 		this.viewManager = new ViewManager();
 		this.modelManager = new ModelManager();
@@ -90,6 +93,10 @@ export class Experience {
 		return this.renderer;
 	}
 
+	public getEventManager(): EventManager {
+		return this.eventManager;
+	}
+
 	public getPhysicsManager(): PhysicsManager {
 		return this.physicsManager;
 	}
@@ -115,6 +122,7 @@ export class Experience {
 	}
 
 	public init(): void {
+		this.eventManager.start();
 		this.physicsManager.start().then(() => {
 			this.modelManager.load(this.scene).then(() => {
 				this.viewManager.start();

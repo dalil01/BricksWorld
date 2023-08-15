@@ -42,13 +42,16 @@ export class Avatar extends Model {
 
 				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(-1, 3, 1);
 				const rigidBody = world.createRigidBody(bodyDesc);
-				const dynamicCollider = rapier.ColliderDesc.ball(0.28);
+				const dynamicCollider = rapier.ColliderDesc.ball(0.9);
 				world.createCollider(dynamicCollider, rigidBody.handle);
 
-				this.controls.setPhysicsData(new rapier.Ray(
+				//physics.addBody({ collider: dynamicCollider, rigid: rigidBody, mesh: this.model})
+
+				this.controls.setPhysicsData(dynamicCollider, new rapier.Ray(
 					{ x: 0, y: 0, z: 0 },
 					{ x: 0, y: -1, z: 0}
 				), rigidBody, world)
+
 
 				resolve();
 			}, undefined, () => reject());

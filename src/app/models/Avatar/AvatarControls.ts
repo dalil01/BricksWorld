@@ -5,7 +5,8 @@ import {
 	Clock,
 	Group,
 	LoopOnce,
-	PerspectiveCamera, Quaternion,
+	PerspectiveCamera,
+	Quaternion,
 	Vector3
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -13,6 +14,7 @@ import { Experience } from "../../Experience";
 import { Vars } from "../../../Vars";
 import TWEEN from "@tweenjs/tween.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
+import { EventType } from "../../managers/all/EventManager";
 
 enum CONTROLS {
 	THIRD_PERSON,
@@ -130,14 +132,17 @@ export class AvatarControls {
 	lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 	private storedFall = 0;
 
+	private collider;
 	private ray;
 	private rigidBody;
 	private world;
 
-	public setPhysicsData(ray, rigidBody, world): void {
+	public setPhysicsData(collider, ray, rigidBody, world): void {
+		this.collider = collider;
 		this.ray = ray;
 		this.rigidBody = rigidBody;
 		this.world = world;
+		console.log("KAII", this.rigidBody)
 	}
 
 	public animate(): void {
@@ -148,6 +153,8 @@ export class AvatarControls {
 
 		let velocity = 0;
 		if (this.walkAnimationPlaying || this.runAnimationPlaying) {
+			console.log("oko")
+
 			if (this.currentControls === CONTROLS.FIRST_PERSON) {
 				const p = new Vector3();
 				this.firstPersonPoint.getWorldPosition(p);
@@ -250,7 +257,7 @@ export class AvatarControls {
 			let hit = this.world.castRay(this.ray, 0.5, false, 0xfffffffff);
 			if (hit) {
 				const point = this.ray.pointAt(hit.toi);
-				let diff = translation.y - ( point.y + 0.28);
+				let diff = translation.y - (point.y + 0.28);
 				if (diff < 0.0) {
 					this.storedFall = 0
 					this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5)
@@ -260,7 +267,7 @@ export class AvatarControls {
 			this.walkDirection.x = this.walkDirection.x * velocity * delta
 			this.walkDirection.z = this.walkDirection.z * velocity * delta
 
-			this.rigidBody.setNextKinematicTranslation( {
+			this.rigidBody.setNextKinematicTranslation({
 				x: translation.x + this.walkDirection.x,
 				y: translation.y + this.walkDirection.y,
 				z: translation.z + this.walkDirection.z
@@ -316,10 +323,18 @@ export class AvatarControls {
 	}
 
 	private subscribeToEventListeners(): void {
-		document.addEventListener("keydown", (ev) => this.onKeyDown(ev));
-		document.addEventListener("keyup", (ev) => this.onKeyUp(ev));
-		document.addEventListener("mousemove", (ev) => this.onMouseMove());
+		const eventManager = Experience.get().getEventManager();
+		eventManager.pushCallback(EventType.KEYDOWN, (ev) => this.onKeyDown(ev));
+		eventManager.pushCallback(EventType.KEYUP, (ev) => this.onKeyUp(ev));
+		eventManager.pushCallback(EventType.MOUSEMOVE, () => this.onMouseMove());
+
+		/*
+			document.addEventListener("keydown", (ev) => this.onKeyDown(ev));
+			document.addEventListener("keyup", (ev) => this.onKeyUp(ev));
+			document.addEventListener("mousemove", (ev) => this.onMouseMove());
+		*/
 	}
+
 
 	private onKeyDown(ev: KeyboardEvent): void {
 		if (ev.key === '1') {
@@ -334,7 +349,7 @@ export class AvatarControls {
 			return;
 		}
 
-		(this.keysPressed as any)[ev.key.toUpperCase()] = true;
+		(this.keysPressed as any)[ev.key] = true;
 
 		if (this.jumpAnimation && ev.code === "Space") {
 			this.playJumpAnimation();
@@ -357,8 +372,7 @@ export class AvatarControls {
 	}
 
 	private onKeyUp(ev: KeyboardEvent): void {
-		(this.keysPressed as any)[ev.key.toUpperCase()] = false
-
+		(this.keysPressed as any)[ev.key] = false
 		if (this.runAnimationPlaying && ev.key === "Shift") {
 			this.stopRunAnimation();
 			this.playWalkAnimation();
@@ -367,7 +381,6 @@ export class AvatarControls {
 		if (this.walkAnimationPlaying && !this.isMovingKeyPressed()) {
 			this.stopWalkAnimation();
 		}
-
 	}
 
 	private onMouseMove(): void {
@@ -430,23 +443,23 @@ export class AvatarControls {
 	private findDirectionOffset(): number {
 		let directionOffset = 0; // Z
 
-		if (this.keysPressed['Z']) {
-			if (this.keysPressed['Q']) {
+		if (this.keysPressed['z']) {
+			if (this.keysPressed['q']) {
 				directionOffset = Math.PI / 4; // Z+Q
-			} else if (this.keysPressed['D']) {
+			} else if (this.keysPressed['d']) {
 				directionOffset = -Math.PI / 4; // Z+D
 			}
-		} else if (this.keysPressed['S']) {
-			if (this.keysPressed['Q']) {
+		} else if (this.keysPressed['s']) {
+			if (this.keysPressed['q']) {
 				directionOffset = Math.PI / 4 + Math.PI / 2; // S+Q
-			} else if (this.keysPressed['D']) {
+			} else if (this.keysPressed['d']) {
 				directionOffset = -Math.PI / 4 - Math.PI / 2; // S+D
 			} else {
 				directionOffset = Math.PI; // S
 			}
-		} else if (this.keysPressed['Q']) {
+		} else if (this.keysPressed['q']) {
 			directionOffset = Math.PI / 2; // Q
-		} else if (this.keysPressed['D']) {
+		} else if (this.keysPressed['d']) {
 			directionOffset = -Math.PI / 2; // D
 		}
 

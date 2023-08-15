@@ -3,6 +3,7 @@ import { Collider, ColliderDesc, RigidBody, World } from "@dimforge/rapier3d";
 import { Mesh, Quaternion } from "three";
 
 export type Body = {
+	collider: Collider,
 	rigid: RigidBody, mesh: Mesh
 };
 
@@ -50,6 +51,10 @@ export class PhysicsManager extends Manager {
 		console.log(this.bodys)
 	}
 
+	getBodies()
+	{
+		return this.bodys;
+	}
 	public update(): void {
 	}
 
