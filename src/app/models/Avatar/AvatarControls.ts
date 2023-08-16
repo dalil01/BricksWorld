@@ -16,7 +16,7 @@ import TWEEN from "@tweenjs/tween.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 import { EventType } from "../../managers/all/EventManager";
 import { Ray, RigidBody, Vector, World } from '@dimforge/rapier3d';
-import { COLLISION_GROUP, PhysicsManager } from "../../managers/all/PhysicsManager";
+import { COLLISION_GROUP } from "../../managers/all/PhysicsManager";
 
 enum CONTROLS {
 	THIRD_PERSON,
@@ -33,6 +33,8 @@ export class AvatarControls {
 
 	private readonly animations: AnimationClip[];
 	private animationMixer: AnimationMixer;
+
+	private firstAnimate: boolean = true;
 
 	private walkAnimation!: AnimationAction;
 	private walkAnimationPlaying: boolean = false;
@@ -71,9 +73,10 @@ export class AvatarControls {
 	private readonly rayZL: Ray;
 	private readonly rayZR: Ray;
 
+	private defaultTranslation: Vector3;
 	private validatedTranslation!: Vector;
 
-	public constructor(model: Group, rigidBody: RigidBody, rigidBodyRadius: number, animations: AnimationClip[]) {
+	public constructor(model: Group, rigidBody: RigidBody, rigidBodyRadius: number, defaultTranslation: Vector3, animations: AnimationClip[]) {
 		this.avatar = model;
 		this.animations = animations;
 		this.animationMixer = new AnimationMixer(this.avatar);
@@ -87,6 +90,7 @@ export class AvatarControls {
 
 		this.rigidBody = rigidBody;
 		this.rigidBodyRadius = rigidBodyRadius;
+		this.defaultTranslation = defaultTranslation;
 		this.world = Experience.get().getPhysicsManager().getWorld();
 
 		this.rayYB = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 });
@@ -163,23 +167,22 @@ export class AvatarControls {
 		this.walkDirection.x = this.walkDirection.y = this.walkDirection.z = 0
 
 		let velocity = 0;
-		if (this.walkAnimationPlaying || this.runAnimationPlaying) {
+		if (this.walkAnimationPlaying || this.runAnimationPlaying || this.firstAnimate) {
 			if (this.currentControls === CONTROLS.FIRST_PERSON) {
-				const p = new Vector3();
-				this.firstPersonPoint.getWorldPosition(p);
+				const firstPersonPosition = new Vector3();
+				this.firstPersonPoint.getWorldPosition(firstPersonPosition);
 
 				const cameraDirection = new Vector3();
 				this.camera.getWorldDirection(cameraDirection);
 
 				// Calculer l'angle de rotation pour faire tourner l'objet vers l'arrière de la caméra
-				const angle = Math.atan2(-cameraDirection.x, -cameraDirection.z);
+				const angleYCameraDirect = Math.atan2(-cameraDirection.x, -cameraDirection.z);
 
 				const directionOffset = this.findDirectionOffset();
 
 				// Rotate avatar
-				this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angle + directionOffset);
+				this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirect + directionOffset);
 				this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
-
 
 				// Calculate Direction
 				this.camera.getWorldDirection(this.walkDirection);
@@ -187,96 +190,87 @@ export class AvatarControls {
 				this.walkDirection.normalize();
 				this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
 
+				const newFirstPersonPosition = new Vector3()
+				this.firstPersonPoint.getWorldPosition(newFirstPersonPosition);
 
-				// Run/Walk velocity
-				velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
+				this.camera.position.copy(firstPersonPosition);
+			} else {
+				let angleYCameraDirect = Math.atan2(
+					(this.camera.position.x - this.avatar.position.x),
+					(this.camera.position.z - this.avatar.position.z)
+				);
 
-				// Move avatar & camera
-				const moveX = this.walkDirection.x * velocity * delta;
-				const moveZ = this.walkDirection.z * velocity * delta;
+				// Diagonal movement angle offset
+				const directionOffset = this.findDirectionOffset();
 
-				this.avatar.position.x += moveX;
-				this.avatar.position.z += moveZ;
+				// Rotate avatar
+				this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirect + directionOffset);
+				this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
 
-				const p2 = new Vector3()
-				this.firstPersonPoint.getWorldPosition(p2);
-
-				this.camera.position.copy(p);
-
-				return
+				// Calculate Direction
+				this.camera.getWorldDirection(this.walkDirection);
+				this.walkDirection.y = 0;
+				this.walkDirection.normalize();
+				this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
 			}
-
-			let angleYCameraDirect = Math.atan2(
-				(this.camera.position.x - this.avatar.position.x),
-				(this.camera.position.z - this.avatar.position.z)
-			);
-
-			// Diagonal movement angle offset
-			const directionOffset = this.findDirectionOffset();
-
-			// Rotate avatar
-			this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirect + directionOffset);
-			this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
-
-			// Calculate Direction
-			this.camera.getWorldDirection(this.walkDirection);
-			this.walkDirection.y = 0;
-			this.walkDirection.normalize();
-			this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
 
 			velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
-		}
 
-		const translation = this.rigidBody.translation();
-		if (translation.y < -3) {
-			// Don't fall below ground
-			this.rigidBody.setNextKinematicTranslation({
-				x: 0,
-				y: 10,
-				z: 0
-			});
-		} else {
-			const cameraPositionOffset = this.camera.position.sub(this.avatar.position);
+			const translation = this.rigidBody.translation();
+			if (translation.y < -3) {
+				// Don't fall below ground
+				this.rigidBody.setNextKinematicTranslation({
+					x: this.defaultTranslation.x,
+					y: this.defaultTranslation.y,
+					z: this.defaultTranslation.z
+				});
+			} else {
+				const cameraPositionOffset = this.camera.position.sub(this.avatar.position);
 
-			// Update model and camera
-			this.avatar.position.x = translation.x;
-			this.avatar.position.y = translation.y;
-			this.avatar.position.z = translation.z;
+				// Update model and camera
+				this.avatar.position.x = translation.x;
+				this.avatar.position.y = translation.y;
+				this.avatar.position.z = translation.z;
 
-			this.updateCameraTarget(cameraPositionOffset);
+				this.updateCameraTarget(cameraPositionOffset);
 
-			this.walkDirection.y += this.lerp(this.storedFall, -9.81 * delta, 0.10);
-			this.storedFall = this.walkDirection.y;
+				this.walkDirection.y += this.lerp(this.storedFall, -9.81 * delta, 0.10);
+				this.storedFall = this.walkDirection.y;
 
-			this.rayYB.origin.x = translation.x;
-			this.rayYB.origin.y = translation.y;
-			this.rayYB.origin.z = translation.z;
+				this.rayYB.origin.x = translation.x;
+				this.rayYB.origin.y = translation.y;
+				this.rayYB.origin.z = translation.z;
 
-			let hitYB = this.world.castRay(this.rayYB, 0.5, false, COLLISION_GROUP.ALL);
-			if (hitYB) {
-				const point = this.rayYB.pointAt(hitYB.toi);
-				let diff = translation.y - (point.y + this.rigidBodyRadius);
-				if (diff < 0.0) {
-					this.storedFall = 0;
-					this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5)
+				let hitYB = this.world.castRay(this.rayYB, 0.5, false, COLLISION_GROUP.ALL);
+				if (hitYB) {
+					const point = this.rayYB.pointAt(hitYB.toi);
+					let diff = translation.y - (point.y + this.rigidBodyRadius);
+					if (diff < 0.0) {
+						this.storedFall = 0;
+						this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5)
+					}
+				}
+
+				const canMove = !this.hasObstacleCollisions(translation);
+				if (canMove) {
+					this.walkDirection.x *= velocity * delta;
+					this.walkDirection.z *= velocity * delta;
+
+					this.rigidBody.setNextKinematicTranslation({
+						x: translation.x + this.walkDirection.x,
+						y: translation.y + this.walkDirection.y,
+						z: translation.z + this.walkDirection.z
+					});
+
+					this.validatedTranslation = translation;
+				} else {
+					this.rigidBody.setNextKinematicTranslation(this.validatedTranslation);
 				}
 			}
+		}
 
-			const canMove = !this.hasObstacleCollisions(translation);
-			if (canMove) {
-				this.walkDirection.x *= velocity * delta;
-				this.walkDirection.z *= velocity * delta;
-
-				this.rigidBody.setNextKinematicTranslation({
-					x: translation.x + this.walkDirection.x,
-					y: translation.y + this.walkDirection.y,
-					z: translation.z + this.walkDirection.z
-				});
-
-				this.validatedTranslation = translation;
-			} else {
-				this.rigidBody.setNextKinematicTranslation(this.validatedTranslation);
-			}
+		if (this.firstAnimate) {
+			this.firstAnimate = false;
 		}
 	}
 
@@ -439,7 +433,7 @@ export class AvatarControls {
 			const cameraDirection = new Vector3();
 			this.camera.getWorldDirection(cameraDirection);
 
-			// Calculer l'angle de rotation pour faire tourner l'objet vers l'arrière de la caméra
+			// Calculate the angle of rotation to rotate the object towards the back of the camera
 			const angle = Math.atan2(-cameraDirection.x, -cameraDirection.z);
 
 			const directionOffset = this.findDirectionOffset();
@@ -448,8 +442,8 @@ export class AvatarControls {
 			this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angle + directionOffset);
 			this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
 
-			const p2 = new Vector3()
-			this.firstPersonPoint.getWorldPosition(p2);
+			const firstPersonPosition2 = new Vector3()
+			this.firstPersonPoint.getWorldPosition(firstPersonPosition2);
 
 			this.camera.position.copy(firstPersonPosition);
 		}

@@ -1,5 +1,5 @@
 import { Model } from "../Model";
-import { Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "three";
+import { Mesh, MeshPhongMaterial, Scene, SphereGeometry, Vector3 } from "three";
 import { UModelLoader } from "../../utils/UModelLoader";
 import { Vars } from "../../../Vars";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -38,14 +38,15 @@ export class Avatar extends Model {
 				const rapier = physics.getRapier();
 				const world = physics.getWorld();
 
-				const rigidBodyRadius = 0.25;
+				const defaultTranslation = new Vector3(-1, .44, 1);
+				const rigidBodyRadius = 0.105;
 
-				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(-1, 1, 1);
+				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(defaultTranslation.x, defaultTranslation.y, defaultTranslation.z);
 				const rigidBody = world.createRigidBody(bodyDesc);
 				const dynamicCollider = rapier.ColliderDesc.ball(rigidBodyRadius);
 				world.createCollider(dynamicCollider, rigidBody.handle);
 
-				this.controls = new AvatarControls(this.model, rigidBody, rigidBodyRadius, gltf.animations);
+				this.controls = new AvatarControls(this.model, rigidBody, rigidBodyRadius, defaultTranslation, gltf.animations);
 
 				this.lights.init(scene);
 				this.controls.init();
