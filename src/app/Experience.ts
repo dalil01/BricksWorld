@@ -137,7 +137,7 @@ export class Experience {
 				this.renderer.setAnimationLoop(() => this.animate());
 
 				if (Vars.DEBUG_MODE) {
-					this.initHelpers();
+					//this.initHelpers();
 				}
 			});
 		});

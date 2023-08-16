@@ -48,7 +48,7 @@ export class AvatarLights {
 		scene.add(this.backLight);
 
 		if (Vars.DEBUG_MODE) {
-			this.initHelpers(scene);
+			//this.initHelpers(scene);
 		}
 	}
 

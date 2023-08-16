@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/dalil01/brickcraft#readme",
   "dependencies": {
-    "@dimforge/rapier3d": "0.8.0-alpha.2",
+    "@dimforge/rapier3d": "^0.8.0-alpha.2",
     "@tweenjs/tween.js": "^21.0.0",
     "lil-gui": "^0.18.2",
     "three": "0.155.0"

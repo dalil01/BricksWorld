@@ -48,10 +48,6 @@ export class Sky extends Model {
 	}
 
 	private initHelpers(scene: Scene): void {
-		const boundingBox = new THREE.Box3().setFromObject(this.sky);
-		const boundingBoxHelper = new THREE.Box3Helper(boundingBox, new THREE.Color(0xffff00));
-		scene.add(boundingBoxHelper);
-
 		const GUIFolder = Experience.get().getLilGUI().addFolder("Sky")
 		GUIFolder.add(this.data, "turbidity", 0.0, 20.0, 0.1).onChange(() => this.onChanged());
 		GUIFolder.add(this.data, "rayleigh", 0.0, 4, 0.001).onChange(() => this.onChanged());

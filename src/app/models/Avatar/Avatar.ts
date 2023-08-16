@@ -28,30 +28,25 @@ export class Avatar extends Model {
 		return new Promise((resolve, reject) => {
 			UModelLoader.loadGLTF(Vars.PATH.AVATAR.MODEL, (gltf: GLTF) => {
 				this.model = gltf.scene;
-				this.controls = new AvatarControls(this.model, gltf.animations);
 
 				scene.add(gltf.scene);
-				console.log("Avatar", this.model)
-
-				this.controls.init();
-				this.lights.init(scene);
+				//console.log("Avatar", this.model);
 
 				const physics = Experience.get().getPhysicsManager();
 				const rapier = physics.getRapier();
 				const world = physics.getWorld();
 
+				const rigidBodyRadius = 0.25;
+
 				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(-1, 1, 1);
 				const rigidBody = world.createRigidBody(bodyDesc);
-				const dynamicCollider = rapier.ColliderDesc.ball(0.2);
+				const dynamicCollider = rapier.ColliderDesc.ball(rigidBodyRadius);
 				world.createCollider(dynamicCollider, rigidBody.handle);
 
-				//physics.addBody({ collider: dynamicCollider, rigid: rigidBody, mesh: this.model})
+				this.controls = new AvatarControls(this.model, rigidBody, rigidBodyRadius, gltf.animations);
 
-				this.controls.setPhysicsData(dynamicCollider, new rapier.Ray(
-					{ x: 0, y: 0, z: 0 },
-					{ x: 0, y: -1, z: 0}
-				), rigidBody, world)
-
+				this.lights.init(scene);
+				this.controls.init();
 
 				resolve();
 			}, undefined, () => reject());

@@ -15,6 +15,8 @@ import { Vars } from "../../../Vars";
 import TWEEN from "@tweenjs/tween.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 import { EventType } from "../../managers/all/EventManager";
+import { Ray, RigidBody, Vector, World } from '@dimforge/rapier3d';
+import { COLLISION_GROUP, PhysicsManager } from "../../managers/all/PhysicsManager";
 
 enum CONTROLS {
 	THIRD_PERSON,
@@ -38,7 +40,7 @@ export class AvatarControls {
 
 	private runAnimation!: AnimationAction;
 	private runAnimationPlaying: boolean = false;
-	private runVelocity = 30;
+	private runVelocity = 20;
 
 	private jumpAnimation!: AnimationAction;
 
@@ -56,7 +58,22 @@ export class AvatarControls {
 	private firstPersonPoint;
 	private firstPersonControls!: PointerLockControls;
 
-	public constructor(model: Group, animations: AnimationClip[]) {
+	// Physics
+	private readonly rigidBody: RigidBody;
+	private readonly rigidBodyRadius: number;
+	private readonly world: World;
+
+	private storedFall = 0;
+
+	private readonly rayYB: Ray;
+	private readonly rayXL: Ray;
+	private readonly rayXR: Ray;
+	private readonly rayZL: Ray;
+	private readonly rayZR: Ray;
+
+	private validatedTranslation!: Vector;
+
+	public constructor(model: Group, rigidBody: RigidBody, rigidBodyRadius: number, animations: AnimationClip[]) {
 		this.avatar = model;
 		this.animations = animations;
 		this.animationMixer = new AnimationMixer(this.avatar);
@@ -67,6 +84,16 @@ export class AvatarControls {
 		this.clock = experience.getClock();
 		this.camera = cameraManager.getCamera();
 		this.controls = cameraManager.getControls();
+
+		this.rigidBody = rigidBody;
+		this.rigidBodyRadius = rigidBodyRadius;
+		this.world = Experience.get().getPhysicsManager().getWorld();
+
+		this.rayYB = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 });
+		this.rayXL = new Ray({ x: 0, y: 0, z: 0 }, { x: -1, y: 0, z: 0 });
+		this.rayXR = new Ray({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 });
+		this.rayZL = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: -1 });
+		this.rayZR = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 });
 	}
 
 	public init(): void {
@@ -129,22 +156,6 @@ export class AvatarControls {
 		this.controls.update();
 	}
 
-	lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
-	private storedFall = 0;
-
-	private collider;
-	private ray;
-	private rigidBody;
-	private world;
-
-	public setPhysicsData(collider, ray, rigidBody, world): void {
-		this.collider = collider;
-		this.ray = ray;
-		this.rigidBody = rigidBody;
-		this.world = world;
-		console.log("KAII", this.rigidBody)
-	}
-
 	public animate(): void {
 		const delta = this.clock.getDelta();
 
@@ -192,7 +203,6 @@ export class AvatarControls {
 
 				this.camera.position.copy(p);
 
-
 				return
 			}
 
@@ -229,10 +239,9 @@ export class AvatarControls {
 			//this.updateCameraTarget(moveX, moveZ);
 		}
 
-
 		const translation = this.rigidBody.translation();
-		if (translation.y < -1) {
-			// don't fall below ground
+		if (translation.y < -3) {
+			// Don't fall below ground
 			this.rigidBody.setNextKinematicTranslation({
 				x: 0,
 				y: 10,
@@ -240,51 +249,107 @@ export class AvatarControls {
 			});
 		} else {
 			const cameraPositionOffset = this.camera.position.sub(this.avatar.position);
-			// update model and camera
-			this.avatar.position.x = translation.x
-			this.avatar.position.y = translation.y
-			this.avatar.position.z = translation.z
-			this.updateCameraTarget2(cameraPositionOffset)
 
-			this.walkDirection.y += this.lerp(this.storedFall, -9.82 * delta, 0.10)
-			this.storedFall = this.walkDirection.y
+			// Update model and camera
+			this.avatar.position.x = translation.x;
+			this.avatar.position.y = translation.y;
+			this.avatar.position.z = translation.z;
 
-			this.ray.origin.x = translation.x
-			this.ray.origin.y = translation.y
-			this.ray.origin.z = translation.z
-			let hit = this.world.castRay(this.ray, .5, false, 0xfffffffff);
-			if (hit) {
-				const point = this.ray.pointAt(hit.toi);
-				let diff = translation.y - (point.y + 0.2);
+			this.updateCameraTarget(cameraPositionOffset);
+
+			this.walkDirection.y += this.lerp(this.storedFall, -9.81 * delta, 0.10);
+			this.storedFall = this.walkDirection.y;
+
+			this.rayYB.origin.x = translation.x;
+			this.rayYB.origin.y = translation.y;
+			this.rayYB.origin.z = translation.z;
+
+			let hitYB = this.world.castRay(this.rayYB, 0.5, false, COLLISION_GROUP.ALL);
+			if (hitYB) {
+				const point = this.rayYB.pointAt(hitYB.toi);
+				let diff = translation.y - (point.y + this.rigidBodyRadius);
 				if (diff < 0.0) {
-					this.storedFall = 0
+					this.storedFall = 0;
 					this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5)
 				}
 			}
 
-			this.walkDirection.x = this.walkDirection.x * velocity * delta
-			this.walkDirection.z = this.walkDirection.z * velocity * delta
+			const canMove = !this.hasObstacleCollisions(translation);
+			if (canMove) {
+				this.walkDirection.x *= velocity * delta;
+				this.walkDirection.z *= velocity * delta;
 
-			this.rigidBody.setNextKinematicTranslation({
-				x: translation.x + this.walkDirection.x,
-				y: translation.y + this.walkDirection.y,
-				z: translation.z + this.walkDirection.z
-			});
+				this.rigidBody.setNextKinematicTranslation({
+					x: translation.x + this.walkDirection.x,
+					y: translation.y + this.walkDirection.y,
+					z: translation.z + this.walkDirection.z
+				});
+
+				this.validatedTranslation = translation;
+			} else {
+				this.rigidBody.setNextKinematicTranslation(this.validatedTranslation);
+			}
 		}
 	}
 
-	private updateCameraTarget2(offset: Vector3) {
-		// move camera
-		const rigidTranslation = this.rigidBody.translation();
-		this.camera.position.x = rigidTranslation.x + offset.x
-		this.camera.position.y = rigidTranslation.y + offset.y
-		this.camera.position.z = rigidTranslation.z + offset.z
+	private hasObstacleCollisions(translation: Vector): boolean {
+		this.rayXL.origin.x = translation.x;
+		this.rayXL.origin.y = translation.y;
+		this.rayXL.origin.z = translation.z;
 
-		// update camera target
-		this.cameraTarget.x = rigidTranslation.x
-		this.cameraTarget.y = rigidTranslation.y + 1
-		this.cameraTarget.z = rigidTranslation.z
-		this.controls.target = this.cameraTarget
+		this.rayXR.origin.x = translation.x;
+		this.rayXR.origin.y = translation.y;
+		this.rayXR.origin.z = translation.z;
+
+		this.rayZL.origin.x = translation.x;
+		this.rayZL.origin.y = translation.y;
+		this.rayZL.origin.z = translation.z;
+
+		this.rayZR.origin.x = translation.x;
+		this.rayZR.origin.y = translation.y;
+		this.rayZR.origin.z = translation.z;
+
+		let canMove = false;
+
+		let hitXL = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
+		if (hitXL && this.world.getCollider(hitXL.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
+			console.log("hitXL")
+
+			const point = this.rayXL.pointAt(hitXL.toi);
+			let diffX = translation.x - (point.x + this.rigidBodyRadius);
+			if (diffX < 0.0) {
+				canMove = true;
+			}
+		}
+
+		let hitXR = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
+		if (hitXR && this.world.getCollider(hitXR.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
+			const point = this.rayXR.pointAt(hitXR.toi);
+			let diffX = translation.x - (point.x - this.rigidBodyRadius);
+			if (diffX > 0.0) {
+				canMove = true;
+			}
+		}
+
+		let hitZL = this.world.castRay(this.rayZL, 0.5, false, COLLISION_GROUP.ALL);
+		if (hitZL && this.world.getCollider(hitZL.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
+			const point = this.rayZL.pointAt(hitZL.toi);
+			let diffZ = translation.z - (point.z + this.rigidBodyRadius);
+			if (diffZ < 0.0) {
+				canMove = true;
+			}
+		}
+
+		let hitZR = this.world.castRay(this.rayZR, 0.5, false, COLLISION_GROUP.ALL);
+		if (hitZR && this.world.getCollider(hitZR.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
+			const point = this.rayZR.pointAt(hitZR.toi);
+			let diffZ = translation.z - (point.z - this.rigidBodyRadius);
+			if (diffZ > 0.0) {
+				canMove = true;
+			}
+		}
+
+		return canMove;
 	}
 
 	public moveCameraToDefaultWorldView(): void {
@@ -333,7 +398,6 @@ export class AvatarControls {
 		*/
 	}
 
-
 	private onKeyDown(ev: KeyboardEvent): void {
 		if (ev.key === '1') {
 			this.switchToFirstPersonControl();
@@ -366,11 +430,11 @@ export class AvatarControls {
 
 			this.playWalkAnimation();
 		}
-
 	}
 
 	private onKeyUp(ev: KeyboardEvent): void {
-		(this.keysPressed as any)[ev.key] = false
+		(this.keysPressed as any)[ev.key] = false;
+
 		if (this.runAnimationPlaying && ev.key === "Shift") {
 			this.stopRunAnimation();
 			this.playWalkAnimation();
@@ -383,8 +447,8 @@ export class AvatarControls {
 
 	private onMouseMove(): void {
 		if (this.currentControls === CONTROLS.FIRST_PERSON && !this.walkAnimationPlaying && !this.runAnimationPlaying) {
-			const p = new Vector3();
-			this.firstPersonPoint.getWorldPosition(p);
+			const firstPersonPosition = new Vector3();
+			this.firstPersonPoint.getWorldPosition(firstPersonPosition);
 
 			const cameraDirection = new Vector3();
 			this.camera.getWorldDirection(cameraDirection);
@@ -401,7 +465,7 @@ export class AvatarControls {
 			const p2 = new Vector3()
 			this.firstPersonPoint.getWorldPosition(p2);
 
-			this.camera.position.copy(p);
+			this.camera.position.copy(firstPersonPosition);
 		}
 	}
 
@@ -464,19 +528,25 @@ export class AvatarControls {
 		return directionOffset;
 	}
 
-	private updateCameraTarget(moveX: number, moveZ: number): void {
-		this.camera.position.x += moveX;
-		this.camera.position.z += moveZ;
+	private lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 
-		this.cameraTarget.x = this.avatar.position.x;
-		this.cameraTarget.y = this.avatar.position.y + 3;
-		this.cameraTarget.z = this.avatar.position.z;
+	private updateCameraTarget(offset: Vector3) {
+		const rigidTranslation = this.rigidBody.translation();
+		this.camera.position.x = rigidTranslation.x + offset.x;
+		this.camera.position.y = rigidTranslation.y + offset.y;
+		this.camera.position.z = rigidTranslation.z + offset.z;
 
+		this.cameraTarget.x = rigidTranslation.x;
+		this.cameraTarget.y = rigidTranslation.y + 1;
+		this.cameraTarget.z = rigidTranslation.z;
+		this.controls.target = this.cameraTarget;
+
+		/* TODO
 		this.controls.target = this.cameraTarget;
 		this.controls.enablePan = Vars.DEBUG_MODE;
 		this.controls.rotateSpeed = 2
-
 		this.controls.update();
+		 */
 	}
 
 	private switchToThirdPersonControls(): void {

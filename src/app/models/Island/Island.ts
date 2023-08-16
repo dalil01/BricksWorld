@@ -1,30 +1,12 @@
 import { Model } from "../Model";
-import {
-	Box3,
-	BoxGeometry, ConeGeometry,
-	CylinderGeometry, Euler,
-	Mesh, MeshBasicMaterial, MeshPhongMaterial,
-	MeshStandardMaterial, Object3D,
-	PlaneGeometry, Quaternion,
-	Scene,
-	SphereGeometry,
-	Vector3
-} from "three";
+import { Mesh, Scene, Vector3 } from "three";
 import { UModelLoader } from "../../utils/UModelLoader";
 import { Vars } from "../../../Vars";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import { Experience } from "../../Experience";
-import {
-	World,
-	Vector,
-	ColliderDesc,
-	RigidBodyDesc,
-	RigidBodyType,
-	Shape,
-	TriMesh,
-	RigidBody
-} from '@dimforge/rapier3d';
-import { Body } from "../../managers/all/PhysicsManager";
+import { U3DObject } from "../../utils/U3DObject";
+import { COLLISION_GROUP } from "../../managers/all/PhysicsManager";
+import * as THREE from "three";
 
 export class Island extends Model {
 
@@ -33,128 +15,64 @@ export class Island extends Model {
 	}
 
 
-	init(): void {
+	public init(): void {
 	}
 
-	load(scene: Scene): Promise<void> {
+	public load(scene: Scene): Promise<void> {
 		return new Promise((resolve, reject) => {
-			UModelLoader.loadGLTF(Vars.PATH.ISLAND.PALM_MODEL, (gltf: GLTF) => {
-				this.model = gltf.scene;
+			this.loadPalm(scene, resolve, reject);
+		});
+	}
 
-				scene.add(this.model);
+	private loadPalm(scene, resolve, reject): void {
+		UModelLoader.loadGLTF(Vars.PATH.ISLAND.PALM_MODEL, (gltf: GLTF) => {
+			this.model = gltf.scene;
 
-				const physics = Experience.get().getPhysicsManager();
-				const rapier = physics.getRapier();
-				const world = physics.getWorld();
+			scene.add(this.model);
 
-				console.log("Island", this.model)
+			//const boundingBox = new THREE.Box3().setFromObject(this.model);
+			//const boundingBoxHelper = new THREE.Box3Helper(boundingBox, new THREE.Color(0xffff00));
+			//scene.add(boundingBoxHelper);
+			//console.log("PALM helper box", boundingBoxHelper)
 
-				/*
-				this.model.traverse((child) => {
-					if (child instanceof Mesh) {
-						const boundingBox = new Box3().setFromObject(child);
-						const dimensions = new Vector3();
-						boundingBox.getSize(dimensions);
+			const physics = Experience.get().getPhysicsManager();
+			const rapier = physics.getRapier();
+			const world = physics.getWorld();
 
-						const floorRigidBodyDesc = rapier.RigidBodyDesc.fixed();
-						const floorRigidBody = world.createRigidBody(floorRigidBodyDesc);
-						const floorCollider = rapier.ColliderDesc.cuboid(dimensions.x, dimensions.y, dimensions.z);
+			const modelInfos = U3DObject.extractVerticesAndPositionsFromGroup(this.model);
+			console.log("modelInfos", modelInfos)
 
-						world.createCollider(floorCollider, floorRigidBody.handle);
+			for (const modelInfo of modelInfos) {
+				const floorVertices = modelInfo.vertices;
+				const floorIndices = modelInfo.indices;
 
-						physics.addBody({ collider: floorCollider, rigid: floorRigidBody, mesh: child });
-					}
-				})
+				const floorRigidBodyDesc = rapier.RigidBodyDesc.fixed();
+				const floorRigidBody = world.createRigidBody(floorRigidBodyDesc);
+				const floorCollider = rapier.ColliderDesc.trimesh(floorVertices, floorIndices);
 
-				 */
-
-
-				const modelInfos = this.extractVertexPositionsFromGLBModel(this.model);
-				for (const modelInfo of modelInfos) {
-					console.log(modelInfo)
-					const floorVertices = modelInfo.vertices;
-					const floorIndices = modelInfo.indices;
-
-					// Créez un corps rigide statique pour le sol
-					const floorRigidBodyDesc = rapier.RigidBodyDesc.fixed(); // Ou RigidBodyDesc.newDynamic() si nécessaire
-					const floorRigidBody = world.createRigidBody(floorRigidBodyDesc);
-					const floorCollider = rapier.ColliderDesc.trimesh(floorVertices, floorIndices);
-
-
-					// Ajoutez le corps rigide au monde Rapier
-					world.createCollider(floorCollider, floorRigidBody.handle);
+				let collisionGroups;
+				if (modelInfo.mesh.name === "HiddenFence") {
+					collisionGroups = COLLISION_GROUP.HIDDEN_FENCE;
+					//gltf.scene.remove(modelInfo.mesh);
+				} else {
+					collisionGroups = COLLISION_GROUP.FLOOR;
 				}
 
-				/*
-				this.model.traverse((child) => {
-					console.log("ch", child)
-					if (child instanceof Mesh) {
-						const boundingBox = new Box3().setFromObject(child);
-						const dimensions = new Vector3();
-						boundingBox.getSize(dimensions);
+				floorCollider.setCollisionGroups(collisionGroups);
+				console.log(floorCollider)
 
-						const floorRigidBodyDesc = rapier.RigidBodyDesc.fixed(); // Utilisez newStatic() pour les objets statiques
-						const floorRigidBody = world.createRigidBody(floorRigidBodyDesc);
-
-						const floorColliderDesc = rapier.ColliderDesc.cuboid(dimensions.x, dimensions.y, dimensions.z);
-						world.createCollider(floorColliderDesc, floorRigidBody.handle);
-					}
-				});
-
-				 */
-
-				resolve();
-			}, undefined, () => reject());
-		});
-	}
-
-	calculateModelSize(model: any): [number, number, number] {
-		const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-		const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-
-		model.traverse((child) => {
-			if (child.isMesh) {
-				const geometry = child.geometry;
-
-				geometry.computeBoundingBox();
-				const boundingBox = geometry.boundingBox;
-
-				min.min(boundingBox.min);
-				max.max(boundingBox.max);
+				world.createCollider(floorCollider, floorRigidBody.handle);
+				physics.addBody({ rigid: floorRigidBody, mesh: modelInfo.mesh });
 			}
-		});
 
-		const sizeX = max.x - min.x;
-		const sizeY = max.y - min.y;
-		const sizeZ = max.z - min.z;
-
-		return [sizeX, sizeY, sizeZ];
+			resolve();
+		}, undefined, () => reject());
 	}
 
-	private extractVertexPositionsFromGLBModel(glbModel: any): { vertices: Float32Array, indices: Uint32Array }[] {
-		const vertexPositions: { vertices: Float32Array, indices: Uint32Array }[] = [];
-
-		glbModel.traverse((child) => {
-			if (child instanceof Mesh) {
-				const geometry = child.geometry;
-				geometry.computeVertexNormals();
-
-				const vertices: Float32Array = new Float32Array(geometry.getAttribute('position').array);
-				const indices: Uint32Array = geometry.index ? new Uint32Array(geometry.index.array) : new Uint32Array([]);
-
-				vertexPositions.push({ vertices, indices });
-			}
-		});
-
-		return vertexPositions;
+	public update(): void {
 	}
 
-
-	update(): void {
+	public animate(): void {
 	}
-
-	animate(): void {
-	}
-
 
 }

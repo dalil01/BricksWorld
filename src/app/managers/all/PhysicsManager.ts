@@ -1,11 +1,16 @@
 import { Manager } from "../Manager";
-import { Collider, ColliderDesc, RigidBody, World } from "@dimforge/rapier3d";
+import { RigidBody, World } from "@dimforge/rapier3d";
 import { Mesh, Quaternion } from "three";
 
 export type Body = {
-	collider: Collider,
 	rigid: RigidBody, mesh: Mesh
 };
+
+export enum COLLISION_GROUP {
+	ALL = 0xfffffffff,
+	HIDDEN_FENCE = 0xffffff,
+	FLOOR = 0xffffff
+}
 
 export class PhysicsManager extends Manager {
 
@@ -25,7 +30,6 @@ export class PhysicsManager extends Manager {
 				this.RAPIER = rapier;
 				const gravity = { x: 0.0, y: -9.82, z: 0.0 };
 				this.world = new rapier.World(gravity);
-				console.log(this.world)
 				resolve();
 			});
 		});
@@ -42,19 +46,15 @@ export class PhysicsManager extends Manager {
 		return this.world;
 	}
 
-	public addCollider(desc: ColliderDesc, parent: RigidBody | undefined): void {
-		//this.world.createCollider(desc, parent);
-	}
-
 	public addBody(body: Body): void {
 		this.bodys.push(body);
-		console.log(this.bodys)
 	}
 
 	getBodies()
 	{
 		return this.bodys;
 	}
+
 	public update(): void {
 	}
 
@@ -71,11 +71,7 @@ export class PhysicsManager extends Manager {
 			body.mesh.position.y = position.y
 			body.mesh.position.z = position.z
 
-			body.mesh.setRotationFromQuaternion(
-				new Quaternion(rotation.x,
-					rotation.y,
-					rotation.z,
-					rotation.w));
+			body.mesh.setRotationFromQuaternion(new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w));
 		});
 	}
 
