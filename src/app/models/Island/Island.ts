@@ -52,8 +52,8 @@ export class Island extends Model {
 
 				let collisionGroups;
 				if (modelInfo.mesh.name === "HiddenFence") {
-					collisionGroups = COLLISION_GROUP.HIDDEN_FENCE;
-					//gltf.scene.remove(modelInfo.mesh);
+					collisionGroups = COLLISION_GROUP.OBSTACLE;
+					gltf.scene.remove(modelInfo.mesh);
 				} else {
 					collisionGroups = COLLISION_GROUP.FLOOR;
 				}

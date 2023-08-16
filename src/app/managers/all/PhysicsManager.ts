@@ -8,8 +8,8 @@ export type Body = {
 
 export enum COLLISION_GROUP {
 	ALL = 0xfffffffff,
-	HIDDEN_FENCE = 0xffffff,
-	FLOOR = 0xffffff
+	FLOOR = 0xffffff,
+	OBSTACLE = 0xffffff
 }
 
 export class PhysicsManager extends Manager {

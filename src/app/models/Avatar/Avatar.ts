@@ -30,7 +30,9 @@ export class Avatar extends Model {
 				this.model = gltf.scene;
 
 				scene.add(gltf.scene);
-				//console.log("Avatar", this.model);
+
+				const firstPersonPoint = this.model.children.find((child) => child.name = "firstPersonPoint");
+				scene.remove(firstPersonPoint)
 
 				const physics = Experience.get().getPhysicsManager();
 				const rapier = physics.getRapier();
@@ -54,7 +56,7 @@ export class Avatar extends Model {
 	}
 
 	public override update(): void {
-	this.controls?.update();
+		this.controls?.update();
 	}
 
 	public override animate(): void {

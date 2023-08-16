@@ -189,7 +189,7 @@ export class AvatarControls {
 
 
 				// Run/Walk velocity
-				const velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
+				velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
 
 				// Move avatar & camera
 				const moveX = this.walkDirection.x * velocity * delta;
@@ -224,19 +224,7 @@ export class AvatarControls {
 			this.walkDirection.normalize();
 			this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
 
-			// Run/Walk velocity
 			velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
-			//const velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
-
-			// Move avatar & camera
-			const moveX = this.walkDirection.x * velocity * delta;
-			const moveZ = this.walkDirection.z * velocity * delta;
-
-			//this.avatar.position.x += moveX;
-			//this.avatar.position.z += moveZ;
-
-
-			//this.updateCameraTarget(moveX, moveZ);
 		}
 
 		const translation = this.rigidBody.translation();
@@ -309,47 +297,45 @@ export class AvatarControls {
 		this.rayZR.origin.y = translation.y;
 		this.rayZR.origin.z = translation.z;
 
-		let canMove = false;
+		let hasObstacle = false;
 
 		let hitXL = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
-		if (hitXL && this.world.getCollider(hitXL.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
-			console.log("hitXL")
-
+		if (hitXL && this.world.getCollider(hitXL.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayXL.pointAt(hitXL.toi);
 			let diffX = translation.x - (point.x + this.rigidBodyRadius);
 			if (diffX < 0.0) {
-				canMove = true;
+				hasObstacle = true;
 			}
 		}
 
 		let hitXR = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
-		if (hitXR && this.world.getCollider(hitXR.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
+		if (hitXR && this.world.getCollider(hitXR.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayXR.pointAt(hitXR.toi);
 			let diffX = translation.x - (point.x - this.rigidBodyRadius);
 			if (diffX > 0.0) {
-				canMove = true;
+				hasObstacle = true;
 			}
 		}
 
 		let hitZL = this.world.castRay(this.rayZL, 0.5, false, COLLISION_GROUP.ALL);
-		if (hitZL && this.world.getCollider(hitZL.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
+		if (hitZL && this.world.getCollider(hitZL.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayZL.pointAt(hitZL.toi);
 			let diffZ = translation.z - (point.z + this.rigidBodyRadius);
 			if (diffZ < 0.0) {
-				canMove = true;
+				hasObstacle = true;
 			}
 		}
 
 		let hitZR = this.world.castRay(this.rayZR, 0.5, false, COLLISION_GROUP.ALL);
-		if (hitZR && this.world.getCollider(hitZR.colliderHandle).collisionGroups() === COLLISION_GROUP.HIDDEN_FENCE) {
+		if (hitZR && this.world.getCollider(hitZR.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayZR.pointAt(hitZR.toi);
 			let diffZ = translation.z - (point.z - this.rigidBodyRadius);
 			if (diffZ > 0.0) {
-				canMove = true;
+				hasObstacle = true;
 			}
 		}
 
-		return canMove;
+		return hasObstacle;
 	}
 
 	public moveCameraToDefaultWorldView(): void {
