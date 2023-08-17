@@ -18,6 +18,6 @@ export class Vars {
 		}
 	};
 
-	public static DEBUG_MODE: boolean = true;
+	public static DEBUG_MODE: boolean = false;
 
 }

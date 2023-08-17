@@ -1,24 +1,23 @@
 import { Avatar } from "../../models/avatar/Avatar";
 import { Scene } from "three";
-import { Experience, Sizes } from "../../Experience";
 import { Manager } from "../Manager";
 import { Sky } from "../../models/sky/Sky";
 import { Sea } from "../../models/Sea/Sea";
-import { Island } from "../../models/Island/Island";
+import { PalmIsland } from "../../models/World/PalmIsland";
 
 export class ModelManager extends Manager {
 
 	private readonly sky: Sky;
 	private readonly sea: Sea;
 	private readonly avatar: Avatar;
-	private readonly island: Island;
+	private readonly island: PalmIsland;
 
 	public constructor() {
 		super();
 		this.sky = new Sky();
 		this.sea = new Sea();
 		this.avatar = new Avatar();
-		this.island = new Island();
+		this.island = new PalmIsland();
 	}
 
 	public getAvatar(): Avatar {

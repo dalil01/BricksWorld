@@ -16,7 +16,7 @@ import TWEEN from "@tweenjs/tween.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 import { EventType } from "../../managers/all/EventManager";
 import { Ray, RigidBody, Vector, World } from '@dimforge/rapier3d';
-import { COLLISION_GROUP } from "../../managers/all/PhysicsManager";
+import { COLLISION_GROUP, GRAVITY } from "../../managers/all/PhysicsManager";
 
 enum CONTROLS {
 	THIRD_PERSON,
@@ -217,55 +217,46 @@ export class AvatarControls {
 			velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
 
 			const translation = this.rigidBody.translation();
-			if (translation.y < -3) {
-				// Don't fall below ground
+			const cameraPositionOffset = this.camera.position.sub(this.avatar.position);
+
+			// Update model and camera
+			this.avatar.position.x = translation.x;
+			this.avatar.position.y = translation.y;
+			this.avatar.position.z = translation.z;
+
+			this.updateCameraTarget(cameraPositionOffset);
+
+			this.walkDirection.y += this.lerp(this.storedFall, GRAVITY * delta, 0.10);
+			this.storedFall = this.walkDirection.y;
+
+			this.rayYB.origin.x = translation.x;
+			this.rayYB.origin.y = translation.y;
+			this.rayYB.origin.z = translation.z;
+
+			let hitYB = this.world.castRay(this.rayYB, .5, false, COLLISION_GROUP.ALL);
+			if (hitYB) {
+				const point = this.rayYB.pointAt(hitYB.toi);
+				let diff = translation.y - (point.y + this.rigidBodyRadius);
+				if (diff < 0.0) {
+					this.storedFall = 0;
+					this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5);
+				}
+			}
+
+			const canMove = !this.hasObstacleCollisions(translation);
+			if (canMove) {
+				this.walkDirection.x *= velocity * delta;
+				this.walkDirection.z *= velocity * delta;
+
 				this.rigidBody.setNextKinematicTranslation({
-					x: this.defaultTranslation.x,
-					y: this.defaultTranslation.y,
-					z: this.defaultTranslation.z
+					x: translation.x + this.walkDirection.x,
+					y: translation.y + this.walkDirection.y,
+					z: translation.z + this.walkDirection.z
 				});
-			} else {
-				const cameraPositionOffset = this.camera.position.sub(this.avatar.position);
 
-				// Update model and camera
-				this.avatar.position.x = translation.x;
-				this.avatar.position.y = translation.y;
-				this.avatar.position.z = translation.z;
-
-				this.updateCameraTarget(cameraPositionOffset);
-
-				this.walkDirection.y += this.lerp(this.storedFall, -9.81 * delta, 0.10);
-				this.storedFall = this.walkDirection.y;
-
-				this.rayYB.origin.x = translation.x;
-				this.rayYB.origin.y = translation.y;
-				this.rayYB.origin.z = translation.z;
-
-				let hitYB = this.world.castRay(this.rayYB, 0.5, false, COLLISION_GROUP.ALL);
-				if (hitYB) {
-					const point = this.rayYB.pointAt(hitYB.toi);
-					let diff = translation.y - (point.y + this.rigidBodyRadius);
-					if (diff < 0.0) {
-						this.storedFall = 0;
-						this.walkDirection.y = this.lerp(0, Math.abs(diff), 0.5)
-					}
-				}
-
-				const canMove = !this.hasObstacleCollisions(translation);
-				if (canMove) {
-					this.walkDirection.x *= velocity * delta;
-					this.walkDirection.z *= velocity * delta;
-
-					this.rigidBody.setNextKinematicTranslation({
-						x: translation.x + this.walkDirection.x,
-						y: translation.y + this.walkDirection.y,
-						z: translation.z + this.walkDirection.z
-					});
-
-					this.validatedTranslation = translation;
-				} else {
-					this.rigidBody.setNextKinematicTranslation(this.validatedTranslation);
-				}
+				this.validatedTranslation = translation;
+			} else if (this.validatedTranslation) {
+				this.rigidBody.setNextKinematicTranslation(this.validatedTranslation);
 			}
 		}
 
@@ -293,7 +284,7 @@ export class AvatarControls {
 
 		let hasObstacle = false;
 
-		let hitXL = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
+		let hitXL = this.world.castRay(this.rayXR, .5, false, COLLISION_GROUP.ALL);
 		if (hitXL && this.world.getCollider(hitXL.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayXL.pointAt(hitXL.toi);
 			let diffX = translation.x - (point.x + this.rigidBodyRadius);
@@ -302,7 +293,7 @@ export class AvatarControls {
 			}
 		}
 
-		let hitXR = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
+		let hitXR = this.world.castRay(this.rayXR, .5, false, COLLISION_GROUP.ALL);
 		if (hitXR && this.world.getCollider(hitXR.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayXR.pointAt(hitXR.toi);
 			let diffX = translation.x - (point.x - this.rigidBodyRadius);
@@ -311,7 +302,7 @@ export class AvatarControls {
 			}
 		}
 
-		let hitZL = this.world.castRay(this.rayZL, 0.5, false, COLLISION_GROUP.ALL);
+		let hitZL = this.world.castRay(this.rayZL, .5, false, COLLISION_GROUP.ALL);
 		if (hitZL && this.world.getCollider(hitZL.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayZL.pointAt(hitZL.toi);
 			let diffZ = translation.z - (point.z + this.rigidBodyRadius);
@@ -320,7 +311,7 @@ export class AvatarControls {
 			}
 		}
 
-		let hitZR = this.world.castRay(this.rayZR, 0.5, false, COLLISION_GROUP.ALL);
+		let hitZR = this.world.castRay(this.rayZR, .5, false, COLLISION_GROUP.ALL);
 		if (hitZR && this.world.getCollider(hitZR.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayZR.pointAt(hitZR.toi);
 			let diffZ = translation.z - (point.z - this.rigidBodyRadius);
@@ -391,13 +382,13 @@ export class AvatarControls {
 			return;
 		}
 
-		(this.keysPressed as any)[ev.key] = true;
+		(this.keysPressed as any)[ev.key.toLowerCase()] = true;
 
-		if (this.jumpAnimation && ev.code === "Space") {
+		if (this.jumpAnimation && this.keysPressed["space"]) {
 			this.playJumpAnimation();
 		}
 
-		if (!this.runAnimationPlaying && this.walkAnimationPlaying && ev.key === "Shift") {
+		if (!this.runAnimationPlaying && this.walkAnimationPlaying && this.keysPressed["shift"]) {
 			if (this.walkAnimationPlaying) {
 				this.stopWalkAnimation();
 			}
@@ -413,9 +404,7 @@ export class AvatarControls {
 	}
 
 	private onKeyUp(ev: KeyboardEvent): void {
-		(this.keysPressed as any)[ev.key] = false;
-
-		if (this.runAnimationPlaying && ev.key === "Shift") {
+		if (this.runAnimationPlaying && this.keysPressed["shift"]) {
 			this.stopRunAnimation();
 			this.playWalkAnimation();
 		}
@@ -423,6 +412,15 @@ export class AvatarControls {
 		if (this.walkAnimationPlaying && !this.isMovingKeyPressed()) {
 			this.stopWalkAnimation();
 		}
+
+		(this.keysPressed as any)[ev.key.toLowerCase()] = false;
+
+		if (!this.isMovingKeyPressed()) {
+			this.stopWalkAnimation();
+			this.stopRunAnimation();
+		}
+
+		console.log(this.keysPressed)
 	}
 
 	private onMouseMove(): void {

@@ -1,4 +1,5 @@
-import { Group, Mesh } from "three";
+import { Group, Mesh, Vector3 } from "three";
+import * as THREE from "three";
 
 export class U3DObject {
 
@@ -18,6 +19,11 @@ export class U3DObject {
 		});
 
 		return arr;
+	}
+
+	public static extractBoxSizeFromMesh(mesh: Mesh): Vector3 {
+		const boundingBox = new THREE.Box3().setFromObject(mesh);
+		return boundingBox.getSize(new Vector3());
 	}
 
 }

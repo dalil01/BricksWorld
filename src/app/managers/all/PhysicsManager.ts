@@ -9,8 +9,10 @@ export type Body = {
 export enum COLLISION_GROUP {
 	ALL = 0xfffffffff,
 	FLOOR = 0xffffff,
-	OBSTACLE = 0xffffff
+	OBSTACLE = 0xfffff
 }
+
+export const GRAVITY = -9.82;
 
 export class PhysicsManager extends Manager {
 
@@ -28,7 +30,7 @@ export class PhysicsManager extends Manager {
 		return new Promise((resolve, reject) => {
 			import("@dimforge/rapier3d").then((rapier) => {
 				this.RAPIER = rapier;
-				const gravity = { x: 0.0, y: -9.82, z: 0.0 };
+				const gravity = { x: 0.0, y: GRAVITY, z: 0.0 };
 				this.world = new rapier.World(gravity);
 				resolve();
 			});
