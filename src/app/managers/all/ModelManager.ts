@@ -36,6 +36,11 @@ export class ModelManager extends Manager {
 		await this.world.load(scene);
 	}
 
+	public async reload(scene: Scene): Promise<void> {
+		await this.world.reload(scene);
+		await this.avatar.reload(scene);
+	}
+
 	public override animate(): void {
 		this.avatar.animate();
 		this.world.animate();

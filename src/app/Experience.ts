@@ -15,6 +15,7 @@ import { ViewManager } from "./managers/all/ViewManager";
 import { Vars } from "../Vars";
 import { PhysicsManager } from "./managers/all/PhysicsManager";
 import { EventManager } from "./managers/all/EventManager";
+import { Loader } from "./components/Loader/Loader";
 
 export type Sizes = {
 	w: number;
@@ -24,6 +25,8 @@ export type Sizes = {
 export class Experience {
 
 	private static INSTANCE: Experience;
+
+	private loader: Loader;
 
 	private readonly scene: Scene;
 	private sizes!: Sizes;
@@ -46,6 +49,8 @@ export class Experience {
 
 
 	private constructor() {
+		this.loader = new Loader(document.body, true);
+
 		this.scene = new Scene();
 
 		this.autoSetSizes();
@@ -78,6 +83,10 @@ export class Experience {
 		}
 
 		return Experience.INSTANCE;
+	}
+
+	public getLoader(): Loader {
+		return this.loader;
 	}
 
 	public getScene(): Scene {
@@ -121,6 +130,8 @@ export class Experience {
 	}
 
 	public init(): void {
+		this.loader.show();
+
 		this.eventManager.start();
 		this.physicsManager.start().then(() => {
 			this.modelManager.load(this.scene).then(() => {
@@ -138,6 +149,8 @@ export class Experience {
 				if (Vars.DEBUG_MODE) {
 					//this.initHelpers();
 				}
+
+				this.loader.hide();
 			});
 		});
 	}

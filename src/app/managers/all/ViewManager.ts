@@ -72,7 +72,15 @@ export class ViewManager extends Manager {
 
 		const experience = Experience.get();
 		experience.updateRenderer();
-		experience.getModelManager().getAvatar()?.moveCameraToDefaultWorldView();
+
+		const modelManager = experience.getModelManager();
+		const loader = experience.getLoader();
+
+		loader.show();
+		modelManager.reload(experience.getScene()).then(() => {
+			loader.hide();
+			modelManager.getAvatar()?.moveCameraToDefaultWorldView();
+		});
 	}
 
 }

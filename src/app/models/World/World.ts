@@ -5,7 +5,7 @@ import { Vars } from "../../../Vars";
 import { WorldFactory } from "./WorldFactory";
 
 export enum WorldName {
-	PALM_ISLAND = "PalmIsland"
+	PALM_ISLAND = "Palm Island"
 }
 
 export type WorldConfig = {
