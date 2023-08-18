@@ -1,3 +1,5 @@
+import { WorldName } from "./app/models/World/World";
+
 const MODELS_DIR = "models/";
 const AVATAR_DIR = MODELS_DIR + "avatar/";
 const SEA_DIR = MODELS_DIR + "sea/";
@@ -19,5 +21,7 @@ export class Vars {
 	};
 
 	public static DEBUG_MODE: boolean = false;
+
+	public static CURRENT_WORLD: WorldName = WorldName.PALM_ISLAND;
 
 }

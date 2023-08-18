@@ -38,11 +38,11 @@ export class AvatarControls {
 
 	private walkAnimation!: AnimationAction;
 	private walkAnimationPlaying: boolean = false;
-	private walkVelocity = 10;
+	private walkVelocity = 8;
 
 	private runAnimation!: AnimationAction;
 	private runAnimationPlaying: boolean = false;
-	private runVelocity = 20;
+	private runVelocity = 15;
 
 	private jumpAnimation!: AnimationAction;
 
@@ -233,7 +233,7 @@ export class AvatarControls {
 			this.rayYB.origin.y = translation.y;
 			this.rayYB.origin.z = translation.z;
 
-			let hitYB = this.world.castRay(this.rayYB, .5, false, COLLISION_GROUP.ALL);
+			let hitYB = this.world.castRay(this.rayYB, 1, false, COLLISION_GROUP.ALL);
 			if (hitYB) {
 				const point = this.rayYB.pointAt(hitYB.toi);
 				let diff = translation.y - (point.y + this.rigidBodyRadius);
@@ -419,8 +419,6 @@ export class AvatarControls {
 			this.stopWalkAnimation();
 			this.stopRunAnimation();
 		}
-
-		console.log(this.keysPressed)
 	}
 
 	private onMouseMove(): void {

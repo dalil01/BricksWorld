@@ -1,23 +1,17 @@
 import { Avatar } from "../../models/avatar/Avatar";
 import { Scene } from "three";
 import { Manager } from "../Manager";
-import { Sky } from "../../models/sky/Sky";
-import { Sea } from "../../models/Sea/Sea";
-import { PalmIsland } from "../../models/World/PalmIsland";
+import { World } from "../../models/World/World";
 
 export class ModelManager extends Manager {
 
-	private readonly sky: Sky;
-	private readonly sea: Sea;
 	private readonly avatar: Avatar;
-	private readonly island: PalmIsland;
+	private readonly world: World;
 
 	public constructor() {
 		super();
-		this.sky = new Sky();
-		this.sea = new Sea();
 		this.avatar = new Avatar();
-		this.island = new PalmIsland();
+		this.world = new World();
 	}
 
 	public getAvatar(): Avatar {
@@ -25,10 +19,8 @@ export class ModelManager extends Manager {
 	}
 
 	public override start(): void {
-		this.sky.init();
-		this.sea.init();
 		this.avatar.init();
-		this.island.init();
+		this.world.init();
 	}
 
 	public override stop(): void {
@@ -36,17 +28,17 @@ export class ModelManager extends Manager {
 
 	public override update(): void {
 		this.avatar.update();
+		this.world.update();
 	}
 
 	public async load(scene: Scene): Promise<void> {
-		await this.sky.load(scene);
-		await this.sea.load(scene);
 		await this.avatar.load(scene);
-		await this.island.load(scene);
+		await this.world.load(scene);
 	}
 
 	public override animate(): void {
 		this.avatar.animate();
+		this.world.animate();
 	}
 
 }

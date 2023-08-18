@@ -38,8 +38,8 @@ export class Avatar extends Model {
 				const rapier = physics.getRapier();
 				const world = physics.getWorld();
 
-				const defaultTranslation = new Vector3(-1, .44, 1);
-				const rigidBodyRadius = 0.18;
+				const defaultTranslation = new Vector3(-1, .78, 1);
+				const rigidBodyRadius = 0.2;
 
 				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(defaultTranslation.x, defaultTranslation.y, defaultTranslation.z);
 				const rigidBody = world.createRigidBody(bodyDesc);

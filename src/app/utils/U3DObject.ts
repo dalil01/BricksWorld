@@ -3,11 +3,11 @@ import * as THREE from "three";
 
 export class U3DObject {
 
-	public static extractVerticesAndPositionsFromGroup(group: Group): { mesh: Mesh, vertices: Float32Array, indices: Uint32Array }[] {
+	public static extractVerticesAndPositionsFromGroup(group: Group, childConditionCallback: (child) => boolean = () => true): { mesh: Mesh, vertices: Float32Array, indices: Uint32Array }[] {
 		const arr: any = [];
 
 		group.traverse((child) => {
-			if (child instanceof Mesh) {
+			if (child instanceof Mesh && childConditionCallback(child)) {
 				const geometry = child.geometry;
 				geometry.computeVertexNormals();
 

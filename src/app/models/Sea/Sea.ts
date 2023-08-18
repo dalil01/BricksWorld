@@ -1,4 +1,4 @@
-import { Box3, Color, Group, MeshBasicMaterial, Quaternion, Scene, Vector3 } from "three";
+import { Color, Scene } from "three";
 import { Model } from "../Model";
 import { UModelLoader } from "../../utils/UModelLoader";
 import { Vars } from "../../../Vars";
@@ -8,8 +8,6 @@ import { SeaData } from "./SeaData";
 
 export class Sea extends Model {
 
-	private scene!: Scene;
-
 	private data: SeaData;
 
 	public constructor() {
@@ -18,6 +16,10 @@ export class Sea extends Model {
 	}
 
 	public override init(): void {
+	}
+
+	public setData(data: SeaData): void {
+		this.data = data;
 	}
 
 	public override load(scene: Scene): Promise<void> {
@@ -78,8 +80,6 @@ export class Sea extends Model {
 			}
 		}
 
-		console.log(this.model)
-
 		if (Vars.DEBUG_MODE) {
 			console.log(`Sea - Total clones generated: ${ totalClones }`);
 		}
@@ -95,7 +95,7 @@ export class Sea extends Model {
 		const GUIFolder = Experience.get().getLilGUI().addFolder("Sea");
 		GUIFolder.add(this.data, "size", 1, 100, 1).onChange(() => {
 			this.clearGeneratedClones();
-			this.generateGridClones()
+			this.generateGridClones();
 		});
 
 		GUIFolder.addColor(this.data, "color").onChange((value) => {

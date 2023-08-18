@@ -22,6 +22,10 @@ export abstract class Model {
 
 	public abstract load(scene: Scene): Promise<void>;
 
+	public reload(scene: Scene): Promise<void> {
+		scene.remove(this.model);
+		return this.load(scene);
+	}
 
 	public abstract update(): void;
 
