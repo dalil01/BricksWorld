@@ -1,5 +1,4 @@
 import {
-	CameraHelper,
 	Clock,
 	GridHelper,
 	PerspectiveCamera,
@@ -173,7 +172,9 @@ export class Experience {
 		this.physicsManager.animate();
 		this.cameraManager.update();
 		this.modelManager.animate();
+
 		TWEEN.update();
+
 		this.renderer.render(this.scene, this.camera);
 	}
 

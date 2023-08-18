@@ -1,5 +1,5 @@
 import { Model } from "../Model";
-import { Box3, Box3Helper, Color, Mesh, MeshPhongMaterial, Scene, SphereGeometry, Vector3 } from "three";
+import { Scene } from "three";
 import { UModelLoader } from "../../utils/UModelLoader";
 import { Vars } from "../../../Vars";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -7,16 +7,22 @@ import { AvatarControls } from "./AvatarControls";
 import { Experience } from "../../Experience";
 import { AvatarLights } from "./AvatarLights";
 import { ViewManager } from "../../managers/all/ViewManager";
+import { AvatarData } from "./AvatarData";
+import { WorldName } from "../World/World";
+import { PalmIsland } from "../World/all/PalmIsland";
 
 export class Avatar extends Model {
+
+	private data: AvatarData;
 
 	private lights: AvatarLights;
 	private controls!: AvatarControls;
 
 	private viewManager!: ViewManager;
 
-	public constructor() {
+	public constructor(data: AvatarData = new AvatarData()) {
 		super();
+		this.data = data;
 		this.lights = new AvatarLights();
 	}
 
@@ -25,6 +31,12 @@ export class Avatar extends Model {
 	}
 
 	public override load(scene: Scene): Promise<void> {
+		switch (Vars.CURRENT_WORLD) {
+			case WorldName.PALM_ISLAND:
+				this.data = PalmIsland.getAvatarConfig();
+				break;
+		}
+
 		return new Promise((resolve, reject) => {
 			UModelLoader.loadGLTF(Vars.PATH.AVATAR.MODEL, (gltf: GLTF) => {
 				this.model = gltf.scene;
@@ -38,15 +50,12 @@ export class Avatar extends Model {
 				const rapier = physics.getRapier();
 				const world = physics.getWorld();
 
-				const defaultTranslation = new Vector3(-1, .78, 1);
-				const rigidBodyRadius = 0.2;
-
-				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(defaultTranslation.x, defaultTranslation.y, defaultTranslation.z);
+				const bodyDesc = rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(this.data.defaultTranslation.x, this.data.defaultTranslation.y, this.data.defaultTranslation.z);
 				const rigidBody = world.createRigidBody(bodyDesc);
-				const dynamicCollider = rapier.ColliderDesc.ball(rigidBodyRadius);
+				const dynamicCollider = rapier.ColliderDesc.ball(this.data.rigidBodyRadius);
 				world.createCollider(dynamicCollider, rigidBody.handle);
 
-				this.controls = new AvatarControls(this.model, rigidBody,rigidBodyRadius, defaultTranslation, gltf.animations);
+				this.controls = new AvatarControls(this.model, rigidBody, this.data.rigidBodyRadius, this.data.defaultTranslation, gltf.animations);
 
 				this.lights.init(scene);
 				this.controls.init();

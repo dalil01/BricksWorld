@@ -248,9 +248,14 @@ export class AvatarControls {
 				this.walkDirection.x *= velocity * delta;
 				this.walkDirection.z *= velocity * delta;
 
+				let y = translation.y + this.walkDirection.y;
+				if (y < 0) {
+					y = this.defaultTranslation.y;
+				}
+
 				this.rigidBody.setNextKinematicTranslation({
 					x: translation.x + this.walkDirection.x,
-					y: translation.y + this.walkDirection.y,
+					y,
 					z: translation.z + this.walkDirection.z
 				});
 

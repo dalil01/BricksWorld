@@ -15,10 +15,10 @@ export class Sky extends Model {
 
 	private sun: Vector3 = new Vector3();
 
-	public constructor() {
+	public constructor(data: SkyData = new SkyData()) {
 		super();
 		this.sky = this.model = new ThreeSky();
-		this.data = new SkyData();
+		this.data = data;
 	}
 
 	public override init(): void {

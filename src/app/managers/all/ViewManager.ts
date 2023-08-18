@@ -10,7 +10,7 @@ enum VIEW {
 
 export class ViewManager extends Manager {
 
-	private currentView: VIEW = VIEW.WORLD;
+	private currentView: VIEW = VIEW.START_MENU_MIN;
 
 	private startMenu: StartMenu;
 

@@ -20,7 +20,7 @@ export class StartMenu extends Component {
 	protected buildUI(): void {
 		//new AvatarEditor(this.mainElement, true);
 
-		const startBtn = UDom.CE("button", { innerText: "Start" });
+		const startBtn = UDom.CE("button", { innerText: "Explore" });
 		startBtn.addEventListener("click", () =>  {
 			this.destroy();
 			Experience.get().getViewManager().switchToWorldView();

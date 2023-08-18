@@ -1,43 +1,40 @@
 import { Model } from "../Model";
 import { Scene } from "three";
-import { PalmIsland } from "./all/PalmIsland";
-import { Sky } from "../Sky/Sky";
-import { Sea } from "../Sea/Sea";
+import { AvatarData } from "../Avatar/AvatarData";
+import { Vars } from "../../../Vars";
+import { WorldFactory } from "./WorldFactory";
 
 export enum WorldName {
 	PALM_ISLAND = "PalmIsland"
 }
 
 export type WorldConfig = {
-	world: WorldName,
+	worldName: WorldName,
 
-}
+	avatarData?: AvatarData
+};
 
 export class World extends Model {
 
-	private readonly sky: Sky;
-	private readonly sea: Sea;
-	private readonly island: PalmIsland;
+	private currentWorld!: Model | null;
 
 	public constructor() {
 		super();
-		this.sky = new Sky();
-		this.sea = new Sea();
-		this.island = new PalmIsland();
 	}
 
 	public init(): void {
-		this.sky.init();
-		this.sea.init();
-		this.island.init();
+
 	}
 
 	public async load(scene: Scene): Promise<void> {
-		await this.sky.load(scene);
-		await this.sea.load(scene);
-		await this.island.load(scene);
+		this.currentWorld = WorldFactory.create(Vars.CURRENT_WORLD);
 
-		//return Promise.resolve(undefined);
+		if (this.currentWorld) {
+			this.currentWorld.init();
+			return this.currentWorld.load(scene);
+		}
+
+		return Promise.resolve();
 	}
 
 	public update(): void {

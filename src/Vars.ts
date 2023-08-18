@@ -22,6 +22,6 @@ export class Vars {
 
 	public static DEBUG_MODE: boolean = false;
 
-	public static CURRENT_WORLD: WorldName = WorldName.PALM_ISLAND;
+	public static CURRENT_WORLD: WorldName;
 
 }

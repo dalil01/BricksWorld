@@ -10,9 +10,9 @@ export class Sea extends Model {
 
 	private data: SeaData;
 
-	public constructor() {
+	public constructor(data: SeaData = new SeaData()) {
 		super();
-		this.data = new SeaData();
+		this.data = data;
 	}
 
 	public override init(): void {
