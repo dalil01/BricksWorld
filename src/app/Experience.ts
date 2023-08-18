@@ -16,6 +16,7 @@ import { Vars } from "../Vars";
 import { PhysicsManager } from "./managers/all/PhysicsManager";
 import { EventManager } from "./managers/all/EventManager";
 import { Loader } from "./components/Loader/Loader";
+import { UDom } from "./utils/UDom";
 
 export type Sizes = {
 	w: number;
@@ -24,9 +25,9 @@ export type Sizes = {
 
 export class Experience {
 
-	private static INSTANCE: Experience;
+	private static INSTANCE: Experience | null;
 
-	private loader: Loader;
+	private readonly loader: Loader;
 
 	private readonly scene: Scene;
 	private sizes!: Sizes;
@@ -153,6 +154,12 @@ export class Experience {
 				this.loader.hide();
 			});
 		});
+	}
+
+	public stop(): void {
+		UDom.removeAllChildren(document.body);
+		Experience.INSTANCE = null;
+		Experience.get().init();
 	}
 
 	public updateRenderer(): void {

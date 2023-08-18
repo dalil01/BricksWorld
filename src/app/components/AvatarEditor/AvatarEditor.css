@@ -1,6 +1,5 @@
 .avatar-editor-container {
     z-index: 100;
     background-color: red;
-    position: absolute;
     width: 100%;
 }

@@ -1,6 +1,7 @@
 import { Manager } from "../Manager";
 import { START_MENU_MIN_WIDTH, StartMenu } from "../../components/StartMenu/StartMenu";
 import { Experience } from "../../Experience";
+import { Header } from "../../components/Header/Header";
 
 enum VIEW {
 	START_MENU_MIN,
@@ -12,10 +13,12 @@ export class ViewManager extends Manager {
 
 	private currentView: VIEW = VIEW.START_MENU_MIN;
 
+	private header: Header;
 	private startMenu: StartMenu;
 
 	public constructor() {
 		super();
+		this.header = new Header(document.body);
 		this.startMenu = new StartMenu(document.body);
 	}
 
@@ -24,6 +27,8 @@ export class ViewManager extends Manager {
 	}
 
 	public override start(): void {
+		this.header.init();
+
 		if (this.isStartMenuView()) {
 			this.startMenu.init();
 		} else {
@@ -79,6 +84,7 @@ export class ViewManager extends Manager {
 		loader.show();
 		modelManager.reload(experience.getScene()).then(() => {
 			loader.hide();
+			this.header.update();
 			modelManager.getAvatar()?.moveCameraToDefaultWorldView();
 		});
 	}

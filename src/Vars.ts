@@ -5,7 +5,13 @@ const AVATAR_DIR = MODELS_DIR + "avatar/";
 const SEA_DIR = MODELS_DIR + "sea/";
 const ISLAND_DIR = MODELS_DIR + "island/";
 
+const ICONS_DIR = "./icons/";
+
 export class Vars {
+
+	public static DEBUG_MODE: boolean = false;
+
+	public static CURRENT_WORLD: WorldName | null;
 
 	public static PATH = {
 		DRACO: "draco/",
@@ -20,8 +26,8 @@ export class Vars {
 		}
 	};
 
-	public static DEBUG_MODE: boolean = false;
-
-	public static CURRENT_WORLD: WorldName;
+	public static ICONS = {
+		CLOSE: ICONS_DIR + "close-circle.svg"
+	};
 
 }
