@@ -2,6 +2,7 @@ import { Manager } from "../Manager";
 import { START_MENU_MIN_WIDTH, StartMenu } from "../../components/StartMenu/StartMenu";
 import { Experience } from "../../Experience";
 import { Header } from "../../components/Header/Header";
+import { Footer } from "../../components/Footer/Footer";
 
 enum VIEW {
 	START_MENU_MIN,
@@ -15,11 +16,13 @@ export class ViewManager extends Manager {
 
 	private header: Header;
 	private startMenu: StartMenu;
+	private footer: Footer;
 
 	public constructor() {
 		super();
 		this.header = new Header(document.body);
 		this.startMenu = new StartMenu(document.body);
+		this.footer = new Footer(document.body);
 	}
 
 	public getCurrentView(): VIEW {
@@ -34,6 +37,8 @@ export class ViewManager extends Manager {
 		} else {
 			this.switchToWorldView();
 		}
+
+		this.footer.init();
 	}
 
 	public override stop(): void {
@@ -85,6 +90,7 @@ export class ViewManager extends Manager {
 		modelManager.reload(experience.getScene()).then(() => {
 			loader.hide();
 			this.header.update();
+			this.footer.update();
 			modelManager.getAvatar()?.moveCameraToDefaultWorldView();
 		});
 	}

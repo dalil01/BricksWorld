@@ -1,0 +1,33 @@
+.footer-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: white;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.footer-help-icon {
+    position: relative;
+    cursor: pointer;
+}
+
+.footer-help-icon svg {
+    width: 30px;
+}
+
+.footer-help-popover {
+    /*display: none;*/
+    background-color: white;
+    position: absolute;
+    bottom: 30px;
+    right: 35px;
+    padding: 20px;
+    width: 250px;
+    height: 300px;
+    border-radius: 10px;
+    color: black;
+}

@@ -21,7 +21,6 @@ export class Header extends Component {
 		super(parentElement, UDom.CE("div", { className: HEADER_CSS.CONTAINER }), autoInit);
 	}
 
-
 	protected buildUI(): void {
 		const leftContainer = UDom.div({ className: HEADER_CSS.LEFT });
 

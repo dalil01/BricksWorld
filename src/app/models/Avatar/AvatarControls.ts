@@ -375,19 +375,22 @@ export class AvatarControls {
 	}
 
 	private onKeyDown(ev: KeyboardEvent): void {
-		if (ev.key === '1') {
+		const key = ev.key.toLowerCase();
+
+		if (key === '1') {
 			this.switchToFirstPersonControl();
-		} else if (ev.key === '2') {
+		} else if (key === '2') {
 			this.switchToThirdPersonControls();
-		} else if (ev.key === '3') {
+		} else if (key === '3') {
 			this.switchToSceneControls();
 		}
+
 
 		if (this.currentControls === CONTROLS.SCENE) {
 			return;
 		}
 
-		(this.keysPressed as any)[ev.key.toLowerCase()] = true;
+		(this.keysPressed as any)[key] = true;
 
 		if (this.jumpAnimation && this.keysPressed["space"]) {
 			this.playJumpAnimation();
@@ -399,7 +402,7 @@ export class AvatarControls {
 			}
 
 			this.playRunAnimation();
-		} else if (!this.walkAnimationPlaying && this.isMoveKey(ev.key)) {
+		} else if (!this.walkAnimationPlaying && this.isMoveKey(key)) {
 			if (this.runAnimationPlaying) {
 				this.stopRunAnimation();
 			}
@@ -409,6 +412,8 @@ export class AvatarControls {
 	}
 
 	private onKeyUp(ev: KeyboardEvent): void {
+		const key = ev.key.toLowerCase();
+
 		if (this.runAnimationPlaying && this.keysPressed["shift"]) {
 			this.stopRunAnimation();
 			this.playWalkAnimation();
@@ -418,7 +423,7 @@ export class AvatarControls {
 			this.stopWalkAnimation();
 		}
 
-		(this.keysPressed as any)[ev.key.toLowerCase()] = false;
+		(this.keysPressed as any)[key] = false;
 
 		if (!this.isMovingKeyPressed()) {
 			this.stopWalkAnimation();
@@ -451,11 +456,25 @@ export class AvatarControls {
 	}
 
 	private isMoveKey(key: string): boolean {
-		return key === 'z' || key === 'q' || key === 's' || key === 'd';
+		return key === 'z' ||
+			key === "arrowup" ||
+			key === 'q' ||
+			key === "arrowleft" ||
+			key === 's' ||
+			key === "arrowdown" ||
+			key === 'd' ||
+			key === "arrowright";
 	}
 
 	private isMovingKeyPressed(): boolean {
-		return this.keysPressed['z'] || this.keysPressed['q'] || this.keysPressed['s'] || this.keysPressed['d'];
+		return this.keysPressed['z'] ||
+			this.keysPressed["arrowup"] ||
+			this.keysPressed['q'] ||
+			this.keysPressed["arrowleft"] ||
+			this.keysPressed['s'] ||
+			this.keysPressed["arrowdown"] ||
+			this.keysPressed['d'] ||
+			this.keysPressed["arrowright"];
 	}
 
 	private playWalkAnimation(): void {
@@ -486,23 +505,24 @@ export class AvatarControls {
 	private findDirectionOffset(): number {
 		let directionOffset = 0; // Z
 
-		if (this.keysPressed['z']) {
-			if (this.keysPressed['q']) {
+		// TODO : Refactor
+		if (this.keysPressed['z'] || this.keysPressed['arrowup']) {
+			if (this.keysPressed['q'] || this.keysPressed['arrowleft']) {
 				directionOffset = Math.PI / 4; // Z+Q
-			} else if (this.keysPressed['d']) {
+			} else if (this.keysPressed['d'] || this.keysPressed['arrowright']) {
 				directionOffset = -Math.PI / 4; // Z+D
 			}
-		} else if (this.keysPressed['s']) {
-			if (this.keysPressed['q']) {
+		} else if (this.keysPressed['s'] || this.keysPressed['arrowdown']) {
+			if (this.keysPressed['q'] || this.keysPressed['arrowleft']) {
 				directionOffset = Math.PI / 4 + Math.PI / 2; // S+Q
-			} else if (this.keysPressed['d']) {
+			} else if (this.keysPressed['d'] || this.keysPressed['arrowright']) {
 				directionOffset = -Math.PI / 4 - Math.PI / 2; // S+D
 			} else {
 				directionOffset = Math.PI; // S
 			}
-		} else if (this.keysPressed['q']) {
+		} else if (this.keysPressed['q'] || this.keysPressed['arrowleft']) {
 			directionOffset = Math.PI / 2; // Q
-		} else if (this.keysPressed['d']) {
+		} else if (this.keysPressed['d'] || this.keysPressed['arrowright']) {
 			directionOffset = -Math.PI / 2; // D
 		}
 
