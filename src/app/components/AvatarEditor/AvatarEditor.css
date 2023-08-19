@@ -1,5 +1,45 @@
 .avatar-editor-container {
     z-index: 100;
-    background-color: red;
     width: 100%;
+    height: 100%;
+}
+
+.avatar-editor-header {
+    margin: 32px auto 0 auto;
+    width: 80%;
+    background: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px 5px;
+}
+
+.avatar-editor-header span {
+    border: 1px solid white;
+    background-color: red;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.avatar-editor-header svg {
+    width: 20px;
+}
+
+.avatar-editor-content {
+    padding: 8px 5px;
+    margin: auto;
+    width: 80%;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background: oldlace;
+    height: 66%;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
 }

@@ -7,10 +7,15 @@ import { WorldName } from "../../models/World/World";
 import { Vars } from "../../../Vars";
 import { AvatarEditor } from "../AvatarEditor/AvatarEditor";
 import { UNavigator } from "../../utils/UNavigator";
+import { UIcon } from "../../utils/UIcon";
 
 enum START_MENU_CSS {
 	CONTAINER = "start-menu-container",
-	EXPLORER_CONTAINER = "explorer-container"
+	EXPLORER_CONTAINER = "explorer-container",
+	EXPLORER_CONTENT = "explorer-content",
+	EXPLORER_SELECT = "explorer-select",
+	EXPLORER_SELECT_OPTION = "explorer-select-option",
+	EXPLORER_BUTTON = "explorer-button",
 }
 
 export const START_MENU_MIN_WIDTH = 968;
@@ -32,18 +37,20 @@ export class StartMenu extends Component {
 
 		const title = UDom.h2({ innerText: "Explore " });
 
+		const exploreContent = UDom.div({ className: START_MENU_CSS.EXPLORER_CONTENT });
+
 		if (UNavigator.isMobileDevice()) {
 			// TODO : Improve style
 			const switchToComputerEl = UDom.h2({ innerText: "To explore the different worlds available, please use a computer !" });
-			UDom.AC(container, title, switchToComputerEl);
+			UDom.AC(container, UDom.AC(exploreContent, title, switchToComputerEl));
 		} else {
-			const worldsSelect = UDom.select({});
+			const worldsSelect = UDom.select({ className: START_MENU_CSS.EXPLORER_SELECT });
 
 			for (const [key, worldName] of Object.entries(WorldName)) {
-				worldsSelect.add(UDom.option({ value: key, innerText: worldName }));
+				worldsSelect.add(UDom.option({ className: START_MENU_CSS.EXPLORER_SELECT_OPTION, value: key, innerText: worldName }));
 			}
 
-			const button = UDom.CE("button", { innerText: " -> " });
+			const button = UIcon.playArrowOutline({ className: START_MENU_CSS.EXPLORER_BUTTON });
 			button.addEventListener("click", () => {
 				Vars.CURRENT_WORLD = WorldName[worldsSelect.value];
 				if (Vars.CURRENT_WORLD) {
@@ -52,7 +59,7 @@ export class StartMenu extends Component {
 				}
 			});
 
-			UDom.AC(container, title, worldsSelect, button);
+			UDom.AC(container, title, UDom.AC(exploreContent, worldsSelect, button));
 		}
 
 		this.mainElement.appendChild(container);

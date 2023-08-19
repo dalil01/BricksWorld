@@ -49,7 +49,7 @@ export class PalmIsland extends Model {
 
 			const modelInfos = U3DObject.extractVerticesAndPositionsFromGroup(this.model, (child) => child.name.startsWith('_'));
 			for (const modelInfo of modelInfos) {
-				console.log("modelInfo", modelInfo)
+				//console.log("modelInfo", modelInfo)
 
 				const floorVertices = modelInfo.vertices;
 				const floorIndices = modelInfo.indices;
