@@ -20,7 +20,7 @@
 }
 
 .footer-help-popover {
-    /*display: none;*/
+    display: none;
     background-color: white;
     position: absolute;
     bottom: 30px;
@@ -30,4 +30,37 @@
     height: 300px;
     border-radius: 10px;
     color: black;
+    overflow-y: auto;
+    cursor: auto;
+}
+
+.footer-popover-help-icon svg {
+    cursor: pointer;
+    width: 25px;
+    float: right;
+}
+
+.footer-help-popover-title {
+    margin-top: 2px;
+    font-size: 1.25rem;
+}
+
+.footer-help-popover-sub-title {
+    margin-top: 12px;
+    font-size: 1rem;
+}
+
+.footer-help-popover-control {
+    display: flex;
+    margin-top: 6px;
+}
+
+.footer-help-popover-control p:first-child {
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.footer-help-popover-control p:nth-child(2) {
+    margin-left: 6px;
+    font-size: .9rem;
 }

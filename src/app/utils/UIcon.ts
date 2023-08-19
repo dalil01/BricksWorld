@@ -2,6 +2,13 @@ import { UDom } from "./UDom";
 
 export class UIcon {
 
+	public static close(properties = {}): HTMLSpanElement {
+		return UDom.span({
+			innerHTML: "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"m16 16l-4-4m0 0L8 8m4 4l4-4m-4 4l-4 4\"/></svg>",
+			...properties
+		});
+	}
+
 	public static closeCircle(properties = {}): HTMLSpanElement {
 		return UDom.span({
 			innerHTML: "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"m9 9l3 3m0 0l3 3m-3-3l-3 3m3-3l3-3m-3 12a9 9 0 1 1 0-18a9 9 0 0 1 0 18Z\"/></svg>",

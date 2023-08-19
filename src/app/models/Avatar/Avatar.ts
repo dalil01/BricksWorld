@@ -7,9 +7,9 @@ import { AvatarControls } from "./AvatarControls";
 import { Experience } from "../../Experience";
 import { AvatarLights } from "./AvatarLights";
 import { ViewManager } from "../../managers/all/ViewManager";
-import { AvatarData } from "./AvatarData";
 import { WorldName } from "../World/World";
 import { PalmIsland } from "../World/all/PalmIsland";
+import { AvatarData } from "./AvatarData";
 
 export class Avatar extends Model {
 
