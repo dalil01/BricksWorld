@@ -43,7 +43,7 @@ export class AvatarControls {
 	private readonly minViewHeadCameraPos: Vector3 = new Vector3(0, 4, -4);
 	private readonly minViewHeadControlsPos: Vector3 = new Vector3(0, 2.8, 0);
 	private readonly maxViewHeadCameraPos: Vector3 = new Vector3(0, 5, -5);
-	private readonly maxViewHeadControlsPos: Vector3 = new Vector3(0, 3.7, 0);
+	private readonly maxViewHeadControlsPos: Vector3 = new Vector3(0, 3.5, 0);
 
 	private readonly minViewChestCameraPos: Vector3 = new Vector3(0, 3, -6);
 	private readonly minViewChestControlsPos: Vector3 = new Vector3(0, 1.15, 0);
@@ -52,8 +52,8 @@ export class AvatarControls {
 
 	private readonly minViewLegsCameraPos: Vector3 = new Vector3(0, 1, -6);
 	private readonly minViewLegsControlsPos: Vector3 = new Vector3(0, -.4, 0);
-	private readonly maxViewLegsCameraPos: Vector3 = new Vector3(0, 1, -4);
-	private readonly maxViewLegsControlsPos: Vector3 = new Vector3(0, .5, 0);
+	private readonly maxViewLegsCameraPos: Vector3 = new Vector3(0, 2, -4);
+	private readonly maxViewLegsControlsPos: Vector3 = new Vector3(0, 1, 0);
 
 	private readonly moveToEditorViewDuration = 800;
 
@@ -176,7 +176,7 @@ export class AvatarControls {
 		//document.addEventListener("click", () => {
 		//	console.log(this.camera.position)
 		//	console.log(this.controls.target)
-		//})
+		//});
 
 		let cameraPos;
 		let controlsPos;
@@ -248,6 +248,8 @@ export class AvatarControls {
 				.onUpdate(() => this.controls.update())
 				.start();
 		}
+
+		this.avatarEditorView = AVATAR_EDITOR_VIEW.MODELS;
 	}
 
 	public moveCameraToHeadView(): void {
@@ -271,6 +273,8 @@ export class AvatarControls {
 				.onUpdate(() => this.controls.update())
 				.start();
 		}
+
+		this.avatarEditorView = AVATAR_EDITOR_VIEW.HEAD;
 	}
 
 	public moveCameraToChestView(): void {
@@ -294,6 +298,8 @@ export class AvatarControls {
 				.onUpdate(() => this.controls.update())
 				.start();
 		}
+
+		this.avatarEditorView = AVATAR_EDITOR_VIEW.CHEST;
 	}
 
 	public moveCameraToLegsView(): void {
@@ -317,6 +323,8 @@ export class AvatarControls {
 				.onUpdate(() => this.controls.update())
 				.start();
 		}
+
+		this.avatarEditorView = AVATAR_EDITOR_VIEW.LEGS;
 	}
 
 	public animate(): void {
