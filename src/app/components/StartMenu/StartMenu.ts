@@ -16,6 +16,7 @@ enum START_MENU_CSS {
 	EXPLORER_SELECT = "explorer-select",
 	EXPLORER_SELECT_OPTION = "explorer-select-option",
 	EXPLORER_BUTTON = "explorer-button",
+	EXPLORER_SWITCH_MSG = "explorer-switch-msg"
 }
 
 export const START_MENU_MIN_WIDTH = 968;
@@ -40,9 +41,8 @@ export class StartMenu extends Component {
 		const exploreContent = UDom.div({ className: START_MENU_CSS.EXPLORER_CONTENT });
 
 		if (UNavigator.isMobileDevice()) {
-			// TODO : Improve style
-			const switchToComputerEl = UDom.h2({ innerText: "To explore the different worlds available, please use a computer !" });
-			UDom.AC(container, UDom.AC(exploreContent, title, switchToComputerEl));
+			const switchToComputerEl = UDom.h2({  className: START_MENU_CSS.EXPLORER_SWITCH_MSG, innerText: "To explore the different worlds available, please use a computer!" });
+			UDom.AC(container, title, switchToComputerEl);
 		} else {
 			const worldsSelect = UDom.select({ className: START_MENU_CSS.EXPLORER_SELECT });
 

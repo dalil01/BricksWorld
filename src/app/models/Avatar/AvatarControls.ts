@@ -33,13 +33,22 @@ export class AvatarControls {
 	private readonly controls: OrbitControls;
 
 	// Start menu controls
-	private avatarEditorView: AVATAR_EDITOR_VIEW = AVATAR_EDITOR_VIEW.MODELS;
+	private avatarEditorView: AVATAR_EDITOR_VIEW = AVATAR_EDITOR_VIEW.CHEST;
 
 	private readonly minViewModelsCameraPos: Vector3 = new Vector3(0, 5, -15);
 	private readonly minViewModelsControlsPos: Vector3 = new Vector3(0, -1, 0);
-
 	private readonly maxViewModelsCameraPos: Vector3 = new Vector3(0, 5, -8);
 	private readonly maxViewModelsControlsPos: Vector3 = new Vector3(0, 2, 0);
+
+	private readonly minViewHeadCameraPos: Vector3 = new Vector3(0, 4, -4);
+	private readonly minViewHeadControlsPos: Vector3 = new Vector3(0, 2.8, 0);
+	private readonly maxViewHeadCameraPos: Vector3 = new Vector3(0, 5, -4);
+	private readonly maxViewHeadControlsPos: Vector3 = new Vector3(0, 3.7, 0);
+
+	private readonly minViewChestCameraPos: Vector3 = new Vector3(0, 4, -4);
+	private readonly minViewChestControlsPos: Vector3 = new Vector3(0, 2.8, 0);
+	private readonly maxViewChestCameraPos: Vector3 = new Vector3(0, 5, -4);
+	private readonly maxViewChestControlsPos: Vector3 = new Vector3(0, 3.7, 0);
 
 
 	private readonly animations: AnimationClip[];
@@ -158,6 +167,12 @@ export class AvatarControls {
 		this.controls.enableRotate = true;
 		this.controls.maxPolarAngle = Math.PI / 2.42;
 
+
+		document.addEventListener("click", () => {
+			console.log(this.camera.position)
+			console.log(this.controls.target)
+		})
+
 		let cameraPos;
 		let controlsPos;
 		if (viewManager.isStartMenuMinView()) {
@@ -168,6 +183,13 @@ export class AvatarControls {
 				case AVATAR_EDITOR_VIEW.MODELS:
 					break;
 				case AVATAR_EDITOR_VIEW.HEAD:
+					cameraPos = this.minViewHeadCameraPos;
+					controlsPos = this.minViewHeadControlsPos;
+					break;
+				case AVATAR_EDITOR_VIEW.CHEST:
+					cameraPos = this.minViewChestCameraPos;
+					controlsPos = this.minViewChestControlsPos;
+					break;
 			}
 		} else {
 			cameraPos = this.maxViewModelsCameraPos;
@@ -177,6 +199,13 @@ export class AvatarControls {
 				case AVATAR_EDITOR_VIEW.MODELS:
 					break;
 				case AVATAR_EDITOR_VIEW.HEAD:
+					cameraPos = this.maxViewHeadCameraPos;
+					controlsPos = this.maxViewHeadControlsPos;
+					break;
+				case AVATAR_EDITOR_VIEW.CHEST:
+					cameraPos = this.maxViewChestCameraPos;
+					controlsPos = this.maxViewChestControlsPos;
+					break;
 			}
 		}
 

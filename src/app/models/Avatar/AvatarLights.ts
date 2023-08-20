@@ -1,13 +1,12 @@
-import { AmbientLight, DirectionalLight, DirectionalLightHelper, Light, Scene } from "three";
+import { DirectionalLight, DirectionalLightHelper, Scene } from "three";
 import { Vars } from "../../../Vars";
-import { LightProbeHelper } from "three/examples/jsm/helpers/LightProbeHelper";
 
 export class AvatarLights {
 
-	private frontLight: DirectionalLight;
-	private backLight: DirectionalLight;
-	private leftLight: DirectionalLight;
-	private rightLight: DirectionalLight;
+	private readonly frontLight: DirectionalLight;
+	private readonly backLight: DirectionalLight;
+	private readonly leftLight: DirectionalLight;
+	private readonly rightLight: DirectionalLight;
 
 	public constructor() {
 		const color = 0xffffff;
@@ -20,35 +19,23 @@ export class AvatarLights {
 	}
 
 	public init(scene: Scene): void {
+		this.frontLight.position.set(0, 3, -5);
+		scene.add(this.frontLight);
+
+		this.backLight.position.set(0, 3, 5);
+		scene.add(this.backLight);
+
 		/*
-		this.frontLight.position.set(- 60, 100, - 10);
-		this.frontLight.castShadow = true;
-		this.frontLight.shadow.camera.top = 50;
-		this.frontLight.shadow.camera.bottom = - 50;
-		this.frontLight.shadow.camera.left = - 50;
-		this.frontLight.shadow.camera.right = 50;
-		this.frontLight.shadow.camera.near = 0.1;
-		this.frontLight.shadow.camera.far = 200;
-		this.frontLight.shadow.mapSize.width = 4096;
-		this.frontLight.shadow.mapSize.height = 4096;
-		scene.add(this.frontLight)
+		this.leftLight.position.set(5, 3, 0);
+		scene.add(this.leftLight);
+
+		this.rightLight.position.set(-5, 3, 0);
+		scene.add(this.rightLight);
 
 		 */
 
-		this.frontLight.position.set(0, 5, -5);
-		scene.add(this.backLight);
-
-		this.backLight.position.set(0, 5, 5);
-		scene.add(this.backLight);
-
-		this.leftLight.position.set(5, 5, 0);
-		scene.add(this.backLight);
-
-		this.rightLight.position.set(-5, 5, 0);
-		scene.add(this.backLight);
-
 		if (Vars.DEBUG_MODE) {
-			//this.initHelpers(scene);
+			this.initHelpers(scene);
 		}
 	}
 

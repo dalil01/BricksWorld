@@ -1,5 +1,4 @@
 import { WorldName } from "./app/models/World/World";
-import { AVATAR_EDITOR_VIEW } from "./app/components/AvatarEditor/AvatarEditor";
 
 const MODELS_DIR = "models/";
 const AVATAR_DIR = MODELS_DIR + "avatar/";
@@ -10,7 +9,7 @@ const ICONS_DIR = "./icons/";
 
 export class Vars {
 
-	public static DEBUG_MODE: boolean = false;
+	public static DEBUG_MODE: boolean = true;
 
 	public static CURRENT_WORLD: WorldName | null;
 

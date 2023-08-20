@@ -45,6 +45,11 @@
     cursor: pointer;
 }
 
+.explorer-switch-msg {
+    margin-top: 20px;
+    font-size: 1.05rem;
+}
+
 @media (min-width: 968px) {
 
     .start-menu-container {
