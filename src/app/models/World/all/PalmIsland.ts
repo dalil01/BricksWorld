@@ -78,7 +78,7 @@ export class PalmIsland extends Model {
 	public static getAvatarConfig(): AvatarData {
 		const data = new AvatarData();
 
-		data.defaultTranslation = new Vector3(-1, .77, 1);
+		data.defaultTranslation = new Vector3(-1, .72, 1);
 		data.rigidBodyRadius = 0.2;
 
 		return data;

@@ -10,7 +10,7 @@ export class AvatarLights {
 
 	public constructor() {
 		const color = 0xffffff;
-		const intensity = 10;
+		const intensity = 5;
 
 		this.frontLight = new DirectionalLight(color, intensity);
 		this.backLight = new DirectionalLight(color, intensity);
@@ -22,10 +22,11 @@ export class AvatarLights {
 		this.frontLight.position.set(0, 3, -5);
 		scene.add(this.frontLight);
 
+
+		/*
 		this.backLight.position.set(0, 3, 5);
 		scene.add(this.backLight);
 
-		/*
 		this.leftLight.position.set(5, 3, 0);
 		scene.add(this.leftLight);
 

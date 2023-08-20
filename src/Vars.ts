@@ -9,7 +9,7 @@ const ICONS_DIR = "./icons/";
 
 export class Vars {
 
-	public static DEBUG_MODE: boolean = true;
+	public static DEBUG_MODE: boolean = false;
 
 	public static CURRENT_WORLD: WorldName | null;
 
