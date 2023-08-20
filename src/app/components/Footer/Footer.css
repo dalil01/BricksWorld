@@ -41,12 +41,11 @@
 }
 
 .footer-help-popover-title {
-    margin-top: 2px;
     font-size: 1.25rem;
 }
 
 .footer-help-popover-sub-title {
-    margin-top: 12px;
+    margin: 12px 0 8px 0;
     font-size: 1rem;
 }
 

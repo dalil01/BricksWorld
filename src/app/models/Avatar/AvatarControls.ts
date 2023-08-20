@@ -17,6 +17,7 @@ import { PointerLockControls } from "three/examples/jsm/controls/PointerLockCont
 import { EventType } from "../../managers/all/EventManager";
 import { Ray, RigidBody, Vector, World } from '@dimforge/rapier3d';
 import { COLLISION_GROUP, GRAVITY } from "../../managers/all/PhysicsManager";
+import { AVATAR_EDITOR_VIEW } from "../../components/AvatarEditor/AvatarEditor";
 
 enum CONTROLS {
 	THIRD_PERSON,
@@ -30,6 +31,16 @@ export class AvatarControls {
 
 	private readonly camera: PerspectiveCamera;
 	private readonly controls: OrbitControls;
+
+	// Start menu controls
+	private avatarEditorView: AVATAR_EDITOR_VIEW = AVATAR_EDITOR_VIEW.MODELS;
+
+	private readonly minViewModelsCameraPos: Vector3 = new Vector3(0, 5, -15);
+	private readonly minViewModelsControlsPos: Vector3 = new Vector3(0, -1, 0);
+
+	private readonly maxViewModelsCameraPos: Vector3 = new Vector3(0, 5, -8);
+	private readonly maxViewModelsControlsPos: Vector3 = new Vector3(0, 2, 0);
+
 
 	private readonly animations: AnimationClip[];
 	private animationMixer: AnimationMixer;
@@ -67,11 +78,11 @@ export class AvatarControls {
 
 	private storedFall = 0;
 
-	private readonly rayYB: Ray;
-	private readonly rayXL: Ray;
-	private readonly rayXR: Ray;
-	private readonly rayZL: Ray;
-	private readonly rayZR: Ray;
+	private readonly rayYB: Ray = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 });
+	private readonly rayXL: Ray = new Ray({ x: 0, y: 0, z: 0 }, { x: -1, y: 0, z: 0 });
+	private readonly rayXR: Ray = new Ray({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 });
+	private readonly rayZL: Ray = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: -1 });
+	private readonly rayZR: Ray = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 });
 
 	private defaultTranslation: Vector3;
 	private validatedTranslation!: Vector;
@@ -92,12 +103,6 @@ export class AvatarControls {
 		this.rigidBodyRadius = rigidBodyRadius;
 		this.defaultTranslation = defaultTranslation;
 		this.world = Experience.get().getPhysicsManager().getWorld();
-
-		this.rayYB = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 });
-		this.rayXL = new Ray({ x: 0, y: 0, z: 0 }, { x: -1, y: 0, z: 0 });
-		this.rayXR = new Ray({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 });
-		this.rayZL = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: -1 });
-		this.rayZR = new Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 });
 	}
 
 	public init(): void {
@@ -134,6 +139,10 @@ export class AvatarControls {
 	}
 
 	public update(): void {
+		this.startMenuUpdate();
+	}
+
+	private startMenuUpdate(): void {
 		const viewManager = Experience.get().getViewManager();
 		if (!viewManager.isStartMenuView()) {
 			return;
@@ -149,13 +158,30 @@ export class AvatarControls {
 		this.controls.enableRotate = true;
 		this.controls.maxPolarAngle = Math.PI / 2.42;
 
+		let cameraPos;
+		let controlsPos;
 		if (viewManager.isStartMenuMinView()) {
-			this.camera.position.set(0, 5, -15);
-			this.controls.target.set(0, -1, 0);
+			cameraPos = this.minViewModelsCameraPos;
+			controlsPos = this.minViewModelsControlsPos;
+
+			switch (this.avatarEditorView) {
+				case AVATAR_EDITOR_VIEW.MODELS:
+					break;
+				case AVATAR_EDITOR_VIEW.HEAD:
+			}
 		} else {
-			this.camera.position.set(0, 5, -8);
-			this.controls.target.set(0, 2, 0);
+			cameraPos = this.maxViewModelsCameraPos;
+			controlsPos = this.maxViewModelsControlsPos;
+
+			switch (this.avatarEditorView) {
+				case AVATAR_EDITOR_VIEW.MODELS:
+					break;
+				case AVATAR_EDITOR_VIEW.HEAD:
+			}
 		}
+
+		this.camera.position.copy(cameraPos);
+		this.controls.target.copy(controlsPos);
 
 		this.controls.update();
 	}

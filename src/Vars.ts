@@ -1,4 +1,5 @@
 import { WorldName } from "./app/models/World/World";
+import { AVATAR_EDITOR_VIEW } from "./app/components/AvatarEditor/AvatarEditor";
 
 const MODELS_DIR = "models/";
 const AVATAR_DIR = MODELS_DIR + "avatar/";
@@ -22,7 +23,7 @@ export class Vars {
 			MODEL: SEA_DIR + "Sea.glb"
 		},
 		ISLAND: {
-			PALM_MODEL: ISLAND_DIR + "Palm.glb"
+			PALM_MODEL: ISLAND_DIR + "IslandPalm.glb"
 		}
 	};
 

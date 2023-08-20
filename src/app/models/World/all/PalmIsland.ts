@@ -49,7 +49,7 @@ export class PalmIsland extends Model {
 
 			const modelInfos = U3DObject.extractVerticesAndPositionsFromGroup(this.model, (child) => child.name.startsWith('_'));
 			for (const modelInfo of modelInfos) {
-				//console.log("modelInfo", modelInfo)
+				console.log("modelInfo", modelInfo)
 
 				const floorVertices = modelInfo.vertices;
 				const floorIndices = modelInfo.indices;
@@ -57,15 +57,7 @@ export class PalmIsland extends Model {
 				const floorRigidBodyDesc = rapier.RigidBodyDesc.fixed();
 				const floorRigidBody = world.createRigidBody(floorRigidBodyDesc);
 				let floorCollider = rapier.ColliderDesc.trimesh(floorVertices, floorIndices);
-
-				let collisionGroups;
-				if (modelInfo.mesh.name.startsWith("_Physics")) {
-					collisionGroups = COLLISION_GROUP.OBSTACLE;
-				} else if (modelInfo.mesh.name.startsWith("_Fence")) {
-					collisionGroups = COLLISION_GROUP.OBSTACLE;
-				}
-
-				floorCollider.setCollisionGroups(collisionGroups);
+				floorCollider.setCollisionGroups(COLLISION_GROUP.OBSTACLE);
 
 				world.createCollider(floorCollider, floorRigidBody.handle);
 				physics.addBody({ rigid: floorRigidBody, mesh: modelInfo.mesh });

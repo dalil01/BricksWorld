@@ -8,7 +8,6 @@ export type Body = {
 
 export enum COLLISION_GROUP {
 	ALL = 0xfffffffff,
-	FLOOR = 0xffffff,
 	OBSTACLE = 0xfffff
 }
 
