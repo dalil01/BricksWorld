@@ -4,6 +4,7 @@ import { Component } from "../Component";
 import { UDom } from "../../utils/UDom";
 import { UIcon } from "../../utils/UIcon";
 import { Vars } from "../../../Vars";
+import { Experience } from "../../Experience";
 
 enum AVATAR_EDITOR_CSS {
 	CONTAINER = "avatar-editor-container",
@@ -32,21 +33,25 @@ export class AvatarEditor extends Component {
 		const modelsBtn = UIcon.models();
 		modelsBtn.addEventListener("click", () => {
 			this.changeView(AVATAR_EDITOR_VIEW.MODELS);
+			Experience.get().getModelManager().getAvatar().moveCameraToModelsView();
 		});
 
 		const headBtn = UIcon.legoHead();
 		headBtn.addEventListener("click", () => {
 			this.changeView(AVATAR_EDITOR_VIEW.HEAD);
+			Experience.get().getModelManager().getAvatar().moveCameraToHeadView();
 		});
 
 		const chestBtn = UIcon.chest();
 		chestBtn.addEventListener("click", () => {
 			this.changeView(AVATAR_EDITOR_VIEW.CHEST);
+			Experience.get().getModelManager().getAvatar().moveCameraToChestView();
 		});
 
 		const legsBtn = UIcon.legs();
 		legsBtn.addEventListener("click", () => {
 			this.changeView(AVATAR_EDITOR_VIEW.LEGS);
+			Experience.get().getModelManager().getAvatar().moveCameraToLegsView();
 		});
 
 		UDom.AC(this.mainElement, UDom.AC(header, modelsBtn, headBtn, chestBtn, legsBtn));

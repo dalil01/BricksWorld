@@ -33,7 +33,7 @@ export class AvatarControls {
 	private readonly controls: OrbitControls;
 
 	// Start menu controls
-	private avatarEditorView: AVATAR_EDITOR_VIEW = AVATAR_EDITOR_VIEW.CHEST;
+	private avatarEditorView: AVATAR_EDITOR_VIEW = AVATAR_EDITOR_VIEW.MODELS;
 
 	private readonly minViewModelsCameraPos: Vector3 = new Vector3(0, 5, -15);
 	private readonly minViewModelsControlsPos: Vector3 = new Vector3(0, -1, 0);
@@ -42,14 +42,20 @@ export class AvatarControls {
 
 	private readonly minViewHeadCameraPos: Vector3 = new Vector3(0, 4, -4);
 	private readonly minViewHeadControlsPos: Vector3 = new Vector3(0, 2.8, 0);
-	private readonly maxViewHeadCameraPos: Vector3 = new Vector3(0, 5, -4);
+	private readonly maxViewHeadCameraPos: Vector3 = new Vector3(0, 5, -5);
 	private readonly maxViewHeadControlsPos: Vector3 = new Vector3(0, 3.7, 0);
 
-	private readonly minViewChestCameraPos: Vector3 = new Vector3(0, 4, -4);
-	private readonly minViewChestControlsPos: Vector3 = new Vector3(0, 2.8, 0);
-	private readonly maxViewChestCameraPos: Vector3 = new Vector3(0, 5, -4);
-	private readonly maxViewChestControlsPos: Vector3 = new Vector3(0, 3.7, 0);
+	private readonly minViewChestCameraPos: Vector3 = new Vector3(0, 3, -6);
+	private readonly minViewChestControlsPos: Vector3 = new Vector3(0, 1.15, 0);
+	private readonly maxViewChestCameraPos: Vector3 = new Vector3(0, 3, -5);
+	private readonly maxViewChestControlsPos: Vector3 = new Vector3(0, 2, 0);
 
+	private readonly minViewLegsCameraPos: Vector3 = new Vector3(0, 1, -6);
+	private readonly minViewLegsControlsPos: Vector3 = new Vector3(0, -.4, 0);
+	private readonly maxViewLegsCameraPos: Vector3 = new Vector3(0, 1, -4);
+	private readonly maxViewLegsControlsPos: Vector3 = new Vector3(0, .5, 0);
+
+	private readonly moveToEditorViewDuration = 800;
 
 	private readonly animations: AnimationClip[];
 	private animationMixer: AnimationMixer;
@@ -167,11 +173,10 @@ export class AvatarControls {
 		this.controls.enableRotate = true;
 		this.controls.maxPolarAngle = Math.PI / 2.42;
 
-
-		document.addEventListener("click", () => {
-			console.log(this.camera.position)
-			console.log(this.controls.target)
-		})
+		//document.addEventListener("click", () => {
+		//	console.log(this.camera.position)
+		//	console.log(this.controls.target)
+		//})
 
 		let cameraPos;
 		let controlsPos;
@@ -190,6 +195,10 @@ export class AvatarControls {
 					cameraPos = this.minViewChestCameraPos;
 					controlsPos = this.minViewChestControlsPos;
 					break;
+				case AVATAR_EDITOR_VIEW.LEGS:
+					cameraPos = this.minViewLegsCameraPos;
+					controlsPos = this.minViewLegsControlsPos;
+					break;
 			}
 		} else {
 			cameraPos = this.maxViewModelsCameraPos;
@@ -206,6 +215,9 @@ export class AvatarControls {
 					cameraPos = this.maxViewChestCameraPos;
 					controlsPos = this.maxViewChestControlsPos;
 					break;
+				case AVATAR_EDITOR_VIEW.LEGS:
+					cameraPos = this.maxViewLegsCameraPos;
+					controlsPos = this.maxViewLegsControlsPos;
 			}
 		}
 
@@ -213,6 +225,98 @@ export class AvatarControls {
 		this.controls.target.copy(controlsPos);
 
 		this.controls.update();
+	}
+
+	public moveCameraToModelsView(): void {
+		const viewManager = Experience.get().getViewManager();
+		if (viewManager.isStartMenuMinView()) {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.minViewModelsCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.minViewModelsControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		} else {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.maxViewModelsCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.maxViewModelsControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		}
+	}
+
+	public moveCameraToHeadView(): void {
+		const viewManager = Experience.get().getViewManager();
+		if (viewManager.isStartMenuMinView()) {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.minViewHeadCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.minViewHeadControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		} else {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.maxViewHeadCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.maxViewHeadControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		}
+	}
+
+	public moveCameraToChestView(): void {
+		const viewManager = Experience.get().getViewManager();
+		if (viewManager.isStartMenuMinView()) {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.minViewChestCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.minViewChestControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		} else {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.maxViewChestCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.maxViewChestControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		}
+	}
+
+	public moveCameraToLegsView(): void {
+		const viewManager = Experience.get().getViewManager();
+		if (viewManager.isStartMenuMinView()) {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.minViewLegsCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.minViewLegsControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		} else {
+			new TWEEN.Tween(this.camera.position)
+				.to(this.maxViewLegsCameraPos, this.moveToEditorViewDuration)
+				.start();
+
+			new TWEEN.Tween(this.controls.target)
+				.to(this.maxViewLegsControlsPos, this.moveToEditorViewDuration)
+				.onUpdate(() => this.controls.update())
+				.start();
+		}
 	}
 
 	public animate(): void {

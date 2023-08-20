@@ -75,6 +75,22 @@ export class Avatar extends Model {
 		}
 	}
 
+	public moveCameraToModelsView(): void {
+		this.controls.moveCameraToModelsView();
+	}
+
+	public moveCameraToHeadView(): void {
+		this.controls.moveCameraToHeadView();
+	}
+
+	public moveCameraToChestView(): void {
+		this.controls.moveCameraToChestView();
+	}
+
+	public moveCameraToLegsView(): void {
+		this.controls.moveCameraToLegsView();
+	}
+
 	public moveCameraToDefaultWorldView(): void {
 		this.controls.moveCameraToDefaultWorldView();
 	}
