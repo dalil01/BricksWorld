@@ -43,13 +43,16 @@ export class PalmIsland extends Model {
 
 			scene.add(this.model);
 
+			const firstPersonPoint = this.model.children.find((child) => child.name == "FirstPersonPoint")
+			scene.remove(firstPersonPoint);
+
 			const physics = Experience.get().getPhysicsManager();
 			const rapier = physics.getRapier();
 			const world = physics.getWorld();
 
 			const modelInfos = U3DObject.extractVerticesAndPositionsFromGroup(this.model, (child) => child.name.startsWith('_'));
 			for (const modelInfo of modelInfos) {
-				console.log("modelInfo", modelInfo)
+				//console.log("modelInfo", modelInfo)
 
 				const floorVertices = modelInfo.vertices;
 				const floorIndices = modelInfo.indices;
@@ -78,7 +81,7 @@ export class PalmIsland extends Model {
 	public static getAvatarConfig(): AvatarData {
 		const data = new AvatarData();
 
-		data.defaultTranslation = new Vector3(-1, .72, 1);
+		data.defaultTranslation = new Vector3(-1, 0.7, 1);
 		data.rigidBodyRadius = 0.2;
 
 		return data;

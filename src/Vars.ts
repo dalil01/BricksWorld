@@ -1,7 +1,10 @@
 import { WorldName } from "./app/models/World/World";
 
 const MODELS_DIR = "models/";
+
 const AVATAR_DIR = MODELS_DIR + "avatar/";
+const AVATAR_HAIRS_DIR = MODELS_DIR + "avatar/hairs/";
+
 const SEA_DIR = MODELS_DIR + "sea/";
 const ISLAND_DIR = MODELS_DIR + "island/";
 
@@ -16,7 +19,14 @@ export class Vars {
 	public static PATH = {
 		DRACO: "draco/",
 		AVATAR: {
-			MODEL: AVATAR_DIR + "Avatar.glb"
+			MODEL: AVATAR_DIR + "Avatar.glb",
+			HAIRS: {
+				1: {
+					MODEL: AVATAR_HAIRS_DIR +"1/Hair1.glb",
+					IMG: AVATAR_HAIRS_DIR + "1/Hair1.png",
+					COLOR: "#5b3c11"
+				}
+			}
 		},
 		SEA: {
 			MODEL: SEA_DIR + "Sea.glb"

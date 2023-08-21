@@ -88,7 +88,42 @@ export class AvatarEditor extends Component {
 
 	private buildHead(): void {
 		const container = UDom.div({ innerText: "Head" });
+
+		this.buildHairs(container);
+
 		this.content.appendChild(container);
+	}
+
+	private buildHairs(headContainer: HTMLDivElement): void {
+		const container = UDom.div();
+
+		const title = UDom.h3({ innerText: "Hairs" });
+
+		UDom.AC(container, title);
+
+
+		const content = UDom.div();
+
+
+		for (const hairPath of Object.values(Vars.PATH.AVATAR.HAIRS)) {
+			const hairDiv = UDom.div();
+
+			hairDiv.addEventListener("click", () => {
+				const avatar = Experience.get().getModelManager().getAvatar();
+				avatar.loadHair(hairPath.MODEL).then(() => {
+					avatar.changeHairColor(hairPath.COLOR);
+				})
+			})
+
+			const hairImg = UDom.img({ src: hairPath.IMG });
+
+
+			UDom.AC(content, UDom.AC(hairDiv, hairImg));
+		}
+
+		UDom.AC(container, content);
+
+		headContainer.appendChild(container);
 	}
 
 	private buildChest(): void {

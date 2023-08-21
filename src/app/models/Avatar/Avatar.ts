@@ -1,5 +1,5 @@
 import { Model } from "../Model";
-import { Scene } from "three";
+import { Color, MeshStandardMaterial, Scene } from "three";
 import { UModelLoader } from "../../utils/UModelLoader";
 import { Vars } from "../../../Vars";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -19,6 +19,8 @@ export class Avatar extends Model {
 	private controls!: AvatarControls;
 
 	private viewManager!: ViewManager;
+
+	private hair;
 
 	public constructor(data: AvatarData = new AvatarData()) {
 		super();
@@ -43,8 +45,20 @@ export class Avatar extends Model {
 
 				scene.add(gltf.scene);
 
-				const firstPersonPoint = this.model.children.find((child) => child.name = "firstPersonPoint");
-				scene.remove(firstPersonPoint)
+				const firstPersonPoint = this.model.children.find((child) => child.name === "FirstPersonPoint");
+				if (firstPersonPoint) {
+					const transparentMaterial = new MeshStandardMaterial({
+						color: new Color("white"),
+						transparent: true,
+						opacity: 0,
+					});
+
+					if (firstPersonPoint.isMesh) {
+						firstPersonPoint.material = transparentMaterial;
+					}
+
+					//scene.remove(firstPersonPoint)
+				}
 
 				const physics = Experience.get().getPhysicsManager();
 				const rapier = physics.getRapier();
@@ -55,7 +69,7 @@ export class Avatar extends Model {
 				const dynamicCollider = rapier.ColliderDesc.ball(this.data.rigidBodyRadius);
 				world.createCollider(dynamicCollider, rigidBody.handle);
 
-				this.controls = new AvatarControls(this.model, rigidBody, this.data.rigidBodyRadius, this.data.defaultTranslation, gltf.animations);
+				this.controls = new AvatarControls(this.model, rigidBody, this.data, gltf.animations);
 
 				this.lights.init(scene);
 				this.controls.init();
@@ -63,6 +77,40 @@ export class Avatar extends Model {
 				resolve();
 			}, undefined, () => reject());
 		});
+	}
+
+	public async loadHair(path: string): Promise<void> {
+		if (this.hair) {
+			this.model.remove(this.hair);
+		}
+
+		return new Promise((resolve, reject) => {
+			UModelLoader.loadGLTF(path, (gltf: GLTF) => {
+				this.hair = gltf.scene;
+
+				const material = new MeshStandardMaterial();
+				this.hair.traverse((node) => {
+					if (node.isMesh) {
+						node.material = material;
+					}
+				});
+
+				this.model.add(this.hair);
+
+				resolve();
+			});
+		});
+	}
+
+	public changeHairColor(color: string): void {
+		if (this.hair) {
+			const newHairColor = new Color(color);
+			this.hair.traverse((node) => {
+				if (node.isMesh) {
+					node.material.color = newHairColor;
+				}
+			});
+		}
 	}
 
 	public override update(): void {

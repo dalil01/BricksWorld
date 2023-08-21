@@ -18,6 +18,7 @@ import { EventType } from "../../managers/all/EventManager";
 import { Ray, RigidBody, Vector, World } from '@dimforge/rapier3d';
 import { COLLISION_GROUP, GRAVITY } from "../../managers/all/PhysicsManager";
 import { AVATAR_EDITOR_VIEW } from "../../components/AvatarEditor/AvatarEditor";
+import { AvatarData } from "./AvatarData";
 
 enum CONTROLS {
 	THIRD_PERSON,
@@ -35,17 +36,17 @@ export class AvatarControls {
 	// Start menu controls
 	private avatarEditorView: AVATAR_EDITOR_VIEW = AVATAR_EDITOR_VIEW.MODELS;
 
-	private readonly minViewModelsCameraPos: Vector3 = new Vector3(0, 5, -15);
+	private readonly minViewModelsCameraPos: Vector3 = new Vector3(0, 3, -15);
 	private readonly minViewModelsControlsPos: Vector3 = new Vector3(0, -1, 0);
-	private readonly maxViewModelsCameraPos: Vector3 = new Vector3(0, 5, -8);
+	private readonly maxViewModelsCameraPos: Vector3 = new Vector3(0, 4, -8);
 	private readonly maxViewModelsControlsPos: Vector3 = new Vector3(0, 2, 0);
 
-	private readonly minViewHeadCameraPos: Vector3 = new Vector3(0, 4, -4);
+	private readonly minViewHeadCameraPos: Vector3 = new Vector3(0, 3, -4);
 	private readonly minViewHeadControlsPos: Vector3 = new Vector3(0, 2.8, 0);
-	private readonly maxViewHeadCameraPos: Vector3 = new Vector3(0, 5, -5);
+	private readonly maxViewHeadCameraPos: Vector3 = new Vector3(0, 4.8, -5);
 	private readonly maxViewHeadControlsPos: Vector3 = new Vector3(0, 3.5, 0);
 
-	private readonly minViewChestCameraPos: Vector3 = new Vector3(0, 3, -6);
+	private readonly minViewChestCameraPos: Vector3 = new Vector3(0, 2.8, -6);
 	private readonly minViewChestControlsPos: Vector3 = new Vector3(0, 1.15, 0);
 	private readonly maxViewChestCameraPos: Vector3 = new Vector3(0, 3, -5);
 	private readonly maxViewChestControlsPos: Vector3 = new Vector3(0, 2, 0);
@@ -68,9 +69,10 @@ export class AvatarControls {
 
 	private runAnimation!: AnimationAction;
 	private runAnimationPlaying: boolean = false;
-	private runVelocity = 15;
+	private runVelocity = 12;
 
 	private jumpAnimation!: AnimationAction;
+	private jumpAnimationPlaying: boolean = false;
 
 	private keysPressed = {};
 
@@ -102,7 +104,7 @@ export class AvatarControls {
 	private defaultTranslation: Vector3;
 	private validatedTranslation!: Vector;
 
-	public constructor(model: Group, rigidBody: RigidBody, rigidBodyRadius: number, defaultTranslation: Vector3, animations: AnimationClip[]) {
+	public constructor(model: Group, rigidBody: RigidBody, data: AvatarData, animations: AnimationClip[]) {
 		this.avatar = model;
 		this.animations = animations;
 		this.animationMixer = new AnimationMixer(this.avatar);
@@ -115,8 +117,8 @@ export class AvatarControls {
 		this.controls = cameraManager.getControls();
 
 		this.rigidBody = rigidBody;
-		this.rigidBodyRadius = rigidBodyRadius;
-		this.defaultTranslation = defaultTranslation;
+		this.rigidBodyRadius = data.rigidBodyRadius;
+		this.defaultTranslation = data.defaultTranslation;
 		this.world = Experience.get().getPhysicsManager().getWorld();
 	}
 
@@ -134,6 +136,13 @@ export class AvatarControls {
 				this.jumpAnimation = clipAction;
 				this.jumpAnimation.loop = LoopOnce;
 				this.jumpAnimation.clampWhenFinished = true;
+
+				this.animationMixer.addEventListener("finished", (event) => {
+					if (event.action === this.jumpAnimation) {
+						this.jumpAnimation.stop();
+						this.jumpAnimationPlaying = false;
+					}
+				});
 			}
 		}
 
@@ -163,6 +172,9 @@ export class AvatarControls {
 			return;
 		}
 
+		console.log(this.controls.rotateSpeed
+		)
+
 		this.controls.enableDamping = true;
 		this.controls.enablePan = true;
 		this.controls.panSpeed = 1;
@@ -174,8 +186,8 @@ export class AvatarControls {
 		this.controls.maxPolarAngle = Math.PI / 2.42;
 
 		//document.addEventListener("click", () => {
-		//	console.log(this.camera.position)
-		//	console.log(this.controls.target)
+		//	console.log(this.camera.position);
+		//	console.log(this.controls.target);
 		//});
 
 		let cameraPos;
@@ -335,6 +347,8 @@ export class AvatarControls {
 
 		let velocity = 0;
 		if (this.walkAnimationPlaying || this.runAnimationPlaying || this.firstAnimate) {
+
+			let angleYCameraDirect;
 			if (this.currentControls === CONTROLS.FIRST_PERSON) {
 				const firstPersonPosition = new Vector3();
 				this.firstPersonPoint.getWorldPosition(firstPersonPosition);
@@ -343,43 +357,31 @@ export class AvatarControls {
 				this.camera.getWorldDirection(cameraDirection);
 
 				// Calculer l'angle de rotation pour faire tourner l'objet vers l'arrière de la caméra
-				const angleYCameraDirect = Math.atan2(-cameraDirection.x, -cameraDirection.z);
-
-				const directionOffset = this.findDirectionOffset();
-
-				// Rotate avatar
-				this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirect + directionOffset);
-				this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
-
-				// Calculate Direction
-				this.camera.getWorldDirection(this.walkDirection);
-				this.walkDirection.y = 0;
-				this.walkDirection.normalize();
-				this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
+				angleYCameraDirect = Math.atan2(-cameraDirection.x, -cameraDirection.z);
 
 				const newFirstPersonPosition = new Vector3()
 				this.firstPersonPoint.getWorldPosition(newFirstPersonPosition);
 
 				this.camera.position.copy(firstPersonPosition);
 			} else {
-				let angleYCameraDirect = Math.atan2(
+				angleYCameraDirect = Math.atan2(
 					(this.camera.position.x - this.avatar.position.x),
 					(this.camera.position.z - this.avatar.position.z)
 				);
-
-				// Diagonal movement angle offset
-				const directionOffset = this.findDirectionOffset();
-
-				// Rotate avatar
-				this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirect + directionOffset);
-				this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
-
-				// Calculate Direction
-				this.camera.getWorldDirection(this.walkDirection);
-				this.walkDirection.y = 0;
-				this.walkDirection.normalize();
-				this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
 			}
+
+			// Diagonal movement angle offset
+			const directionOffset = this.findDirectionOffset();
+
+			// Rotate avatar
+			this.rotateQuaternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirect + directionOffset);
+			this.avatar.quaternion.rotateTowards(this.rotateQuaternion, 0.5);
+
+			// Calculate Direction
+			this.camera.getWorldDirection(this.walkDirection);
+			this.walkDirection.y = 0;
+			this.walkDirection.normalize();
+			this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset);
 
 			velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
 
@@ -400,7 +402,7 @@ export class AvatarControls {
 			this.rayYB.origin.y = translation.y;
 			this.rayYB.origin.z = translation.z;
 
-			let hitYB = this.world.castRay(this.rayYB, 1, false, COLLISION_GROUP.ALL);
+			let hitYB = this.world.castRay(this.rayYB, 0.5, false, COLLISION_GROUP.ALL);
 			if (hitYB) {
 				const point = this.rayYB.pointAt(hitYB.toi);
 				let diff = translation.y - (point.y + this.rigidBodyRadius);
@@ -456,7 +458,7 @@ export class AvatarControls {
 
 		let hasObstacle = false;
 
-		let hitXL = this.world.castRay(this.rayXR, .5, false, COLLISION_GROUP.ALL);
+		let hitXL = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
 		if (hitXL && this.world.getCollider(hitXL.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayXL.pointAt(hitXL.toi);
 			let diffX = translation.x - (point.x + this.rigidBodyRadius);
@@ -465,7 +467,7 @@ export class AvatarControls {
 			}
 		}
 
-		let hitXR = this.world.castRay(this.rayXR, .5, false, COLLISION_GROUP.ALL);
+		let hitXR = this.world.castRay(this.rayXR, 0.5, false, COLLISION_GROUP.ALL);
 		if (hitXR && this.world.getCollider(hitXR.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayXR.pointAt(hitXR.toi);
 			let diffX = translation.x - (point.x - this.rigidBodyRadius);
@@ -474,7 +476,7 @@ export class AvatarControls {
 			}
 		}
 
-		let hitZL = this.world.castRay(this.rayZL, .5, false, COLLISION_GROUP.ALL);
+		let hitZL = this.world.castRay(this.rayZL, 0.5, false, COLLISION_GROUP.ALL);
 		if (hitZL && this.world.getCollider(hitZL.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayZL.pointAt(hitZL.toi);
 			let diffZ = translation.z - (point.z + this.rigidBodyRadius);
@@ -483,7 +485,7 @@ export class AvatarControls {
 			}
 		}
 
-		let hitZR = this.world.castRay(this.rayZR, .5, false, COLLISION_GROUP.ALL);
+		let hitZR = this.world.castRay(this.rayZR, 0.5, false, COLLISION_GROUP.ALL);
 		if (hitZR && this.world.getCollider(hitZR.colliderHandle).collisionGroups() === COLLISION_GROUP.OBSTACLE) {
 			const point = this.rayZR.pointAt(hitZR.toi);
 			let diffZ = translation.z - (point.z - this.rigidBodyRadius);
@@ -496,6 +498,8 @@ export class AvatarControls {
 	}
 
 	public moveCameraToDefaultWorldView(): void {
+		this.controls.rotateSpeed = 2;
+
 		/*
 		const targetCameraPosition = new Vector3();
 		targetCameraPosition.x = -7;
@@ -552,14 +556,13 @@ export class AvatarControls {
 			this.switchToSceneControls();
 		}
 
-
 		if (this.currentControls === CONTROLS.SCENE) {
 			return;
 		}
 
 		(this.keysPressed as any)[key] = true;
 
-		if (this.jumpAnimation && this.keysPressed["space"]) {
+		if (this.jumpAnimation && ev.code === "Space") {
 			this.playJumpAnimation();
 		}
 
@@ -667,6 +670,7 @@ export class AvatarControls {
 	private playJumpAnimation(): void {
 		this.jumpAnimation.play();
 		this.jumpAnimation.reset();
+		this.jumpAnimationPlaying = true;
 	}
 
 	private findDirectionOffset(): number {

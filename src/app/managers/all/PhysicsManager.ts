@@ -8,7 +8,8 @@ export type Body = {
 
 export enum COLLISION_GROUP {
 	ALL = 0xfffffffff,
-	OBSTACLE = 0xfffff
+	OBSTACLE = 0xfffff,
+	FLOOR = 0xfffffff
 }
 
 export const GRAVITY = -9.82;
