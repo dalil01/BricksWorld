@@ -1,5 +1,5 @@
 import { Model } from "../Model";
-import { Color, MeshStandardMaterial, Scene } from "three";
+import { Color, Group, MeshStandardMaterial, Scene } from "three";
 import { UModelLoader } from "../../utils/UModelLoader";
 import { Vars } from "../../../Vars";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -11,6 +11,15 @@ import { WorldName } from "../World/World";
 import { PalmIsland } from "../World/all/PalmIsland";
 import { AvatarData } from "./AvatarData";
 
+const avatarLocalStorageDataKey = "avatar_data";
+
+type avatarLocalStorageData = {
+	hair?: {
+		id: number,
+		color?: string
+	}
+}
+
 export class Avatar extends Model {
 
 	private data: AvatarData;
@@ -20,7 +29,10 @@ export class Avatar extends Model {
 
 	private viewManager!: ViewManager;
 
-	private hair;
+	private localStorageData!: avatarLocalStorageData;
+
+	private hair: any;
+	private hairPath: undefined | string;
 
 	public constructor(data: AvatarData = new AvatarData()) {
 		super();
@@ -74,19 +86,26 @@ export class Avatar extends Model {
 				this.lights.init(scene);
 				this.controls.init();
 
-				resolve();
+				this.initDataFromLocalStorage().then(() => {
+					resolve();
+				});
 			}, undefined, () => reject());
 		});
 	}
 
-	public async loadHair(path: string): Promise<void> {
+	public async loadHair(id: number, path: string): Promise<void> {
 		if (this.hair) {
+			if (this.hairPath === path) {
+				return;
+			}
+
 			this.model.remove(this.hair);
 		}
 
 		return new Promise((resolve, reject) => {
 			UModelLoader.loadGLTF(path, (gltf: GLTF) => {
 				this.hair = gltf.scene;
+				this.hairPath = path;
 
 				const material = new MeshStandardMaterial();
 				this.hair.traverse((node) => {
@@ -96,6 +115,16 @@ export class Avatar extends Model {
 				});
 
 				this.model.add(this.hair);
+
+				if (!this.localStorageData.hair) {
+					this.localStorageData.hair = {
+						id
+					}
+				}
+
+				this.localStorageData.hair.id = id;
+
+				this.updateDataInLocalStorage();
 
 				resolve();
 			});
@@ -110,6 +139,23 @@ export class Avatar extends Model {
 					node.material.color = newHairColor;
 				}
 			});
+
+			if (this.localStorageData.hair) {
+				this.localStorageData.hair.color = color;
+			}
+
+			this.updateDataInLocalStorage();
+		}
+	}
+
+	public removeHair(): void {
+		if (this.hair) {
+			this.model.remove(this.hair);
+			this.hair = undefined;
+			this.hairPath = undefined;
+			this.localStorageData.hair = undefined;
+
+			this.updateDataInLocalStorage();
 		}
 	}
 
@@ -141,6 +187,32 @@ export class Avatar extends Model {
 
 	public moveCameraToDefaultWorldView(): void {
 		this.controls.moveCameraToDefaultWorldView();
+	}
+
+	private async initDataFromLocalStorage(): Promise<void> {
+		this.localStorageData = JSON.parse(localStorage.getItem(avatarLocalStorageDataKey) || '{}');
+
+		if (this.hair) {
+			this.model.add(this.hair);
+		} else {
+			const hairData = this.localStorageData?.hair;
+			if (hairData) {
+				await this.loadHair(hairData.id, Vars.PATH.AVATAR.HAIRS[hairData.id]?.MODEL).then(() => {
+					if (hairData?.color) {
+						this.changeHairColor(hairData.color);
+					}
+				});
+			}
+		}
+	}
+
+	private updateDataInLocalStorage(): void {
+		if (!this.localStorageData) {
+			localStorage.setItem(avatarLocalStorageDataKey, JSON.stringify("{}"));
+			return;
+		}
+
+		localStorage.setItem(avatarLocalStorageDataKey, JSON.stringify(this.localStorageData));
 	}
 
 }

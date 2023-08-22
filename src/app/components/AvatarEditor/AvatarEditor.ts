@@ -10,6 +10,10 @@ enum AVATAR_EDITOR_CSS {
 	CONTAINER = "avatar-editor-container",
 	CONTENT = "avatar-editor-content",
 	HEADER = "avatar-editor-header",
+	TITLE = "avatar-editor-title",
+	SUB_CONTENT = "avatar-editor-sub-content",
+	CLICKABLE = "avatar-editor-clickable",
+	COLOR = "avatar-editor-color"
 }
 
 export enum AVATAR_EDITOR_VIEW {
@@ -87,43 +91,44 @@ export class AvatarEditor extends Component {
 	}
 
 	private buildHead(): void {
-		const container = UDom.div({ innerText: "Head" });
+		this.buildHairs();
 
-		this.buildHairs(container);
-
-		this.content.appendChild(container);
 	}
 
-	private buildHairs(headContainer: HTMLDivElement): void {
-		const container = UDom.div();
+	private buildHairs(): void {
+		const title = UDom.h3({ innerText: "Hairs", className: AVATAR_EDITOR_CSS.TITLE });
+		this.content.appendChild(title);
 
-		const title = UDom.h3({ innerText: "Hairs" });
+		const container = UDom.div({ className: AVATAR_EDITOR_CSS.SUB_CONTENT });
 
-		UDom.AC(container, title);
-
-
-		const content = UDom.div();
-
+		const noneHairDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
+		noneHairDiv.addEventListener("click", () => {
+			Experience.get().getModelManager().getAvatar().removeHair();
+		});
+		const noneHairImg = UIcon.doNotDisturb();
+		UDom.AC(container, UDom.AC(noneHairDiv, noneHairImg));
 
 		for (const hairPath of Object.values(Vars.PATH.AVATAR.HAIRS)) {
-			const hairDiv = UDom.div();
-
+			const hairDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
 			hairDiv.addEventListener("click", () => {
 				const avatar = Experience.get().getModelManager().getAvatar();
-				avatar.loadHair(hairPath.MODEL).then(() => {
+				avatar.loadHair(hairPath.id, hairPath.MODEL).then(() => {
 					avatar.changeHairColor(hairPath.COLOR);
 				})
 			})
 
 			const hairImg = UDom.img({ src: hairPath.IMG });
 
-
-			UDom.AC(content, UDom.AC(hairDiv, hairImg));
+			UDom.AC(container, UDom.AC(hairDiv, hairImg));
 		}
 
-		UDom.AC(container, content);
+		this.content.appendChild(container);
 
-		headContainer.appendChild(container);
+		const hairColor = UDom.input({ type: "color", className: AVATAR_EDITOR_CSS.COLOR });
+		hairColor.addEventListener("input", (e) => {
+			Experience.get().getModelManager().getAvatar().changeHairColor(hairColor.value);
+		});
+		UDom.AC(this.content, hairColor);
 	}
 
 	private buildChest(): void {

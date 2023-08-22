@@ -23,7 +23,7 @@ export class AvatarLights {
 		scene.add(this.frontLight);
 
 
-		/*
+
 		this.backLight.position.set(0, 3, 5);
 		scene.add(this.backLight);
 
@@ -33,7 +33,6 @@ export class AvatarLights {
 		this.rightLight.position.set(-5, 3, 0);
 		scene.add(this.rightLight);
 
-		 */
 
 		if (Vars.DEBUG_MODE) {
 			this.initHelpers(scene);

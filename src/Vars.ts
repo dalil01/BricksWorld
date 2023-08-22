@@ -22,6 +22,7 @@ export class Vars {
 			MODEL: AVATAR_DIR + "Avatar.glb",
 			HAIRS: {
 				1: {
+					id: 1,
 					MODEL: AVATAR_HAIRS_DIR +"1/Hair1.glb",
 					IMG: AVATAR_HAIRS_DIR + "1/Hair1.png",
 					COLOR: "#5b3c11"

@@ -41,5 +41,31 @@
     height: 66%;
     overflow-y: auto;
     display: flex;
+    flex-direction: column;
+}
+
+.avatar-editor-title {
+    margin: 20px;
+}
+
+.avatar-editor-sub-content {
+    width: 95%;
+    margin: 0 auto;
+    display: flex;
+}
+
+.avatar-editor-clickable {
+    cursor: pointer;
+    width: 62px;
+    height: 62px;
+    margin: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
     justify-content: center;
+}
+
+.avatar-editor-color {
+    margin: 25px;
 }
