@@ -1,5 +1,5 @@
 import { Model } from "../Model";
-import { Color, Group, MeshStandardMaterial, Scene } from "three";
+import { Color, Group, MeshStandardMaterial, Scene, SkinnedMesh } from "three";
 import { UModelLoader } from "../../utils/UModelLoader";
 import { Vars } from "../../../Vars";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -15,7 +15,7 @@ const avatarLocalStorageDataKey = "avatar_data";
 
 type avatarLocalStorageData = {
 	hair?: {
-		id: number,
+		name: string,
 		color?: string
 	}
 }
@@ -24,15 +24,18 @@ export class Avatar extends Model {
 
 	private data: AvatarData;
 
+	private avatarMaterial!: MeshStandardMaterial;
+
+	private hairs: Map<string, SkinnedMesh> = new Map();
+	private currentHair: undefined | SkinnedMesh;
+	private hairMaterial!: MeshStandardMaterial;
+
 	private lights: AvatarLights;
 	private controls!: AvatarControls;
 
 	private viewManager!: ViewManager;
 
 	private localStorageData!: avatarLocalStorageData;
-
-	private hair: any;
-	private hairPath: undefined | string;
 
 	public constructor(data: AvatarData = new AvatarData()) {
 		super();
@@ -42,6 +45,10 @@ export class Avatar extends Model {
 
 	public override init(): void {
 		this.viewManager = Experience.get().getViewManager();
+	}
+
+	public getHairColor(): undefined | string {
+		return this.localStorageData?.hair?.color;
 	}
 
 	public override load(scene: Scene): Promise<void> {
@@ -55,22 +62,25 @@ export class Avatar extends Model {
 			UModelLoader.loadGLTF(Vars.PATH.AVATAR.MODEL, (gltf: GLTF) => {
 				this.model = gltf.scene;
 
-				scene.add(gltf.scene);
+				this.avatarMaterial = new MeshStandardMaterial();
+				this.avatarMaterial.color = new Color("#FFCF00")
 
-				const firstPersonPoint = this.model.children.find((child) => child.name === "FirstPersonPoint");
-				if (firstPersonPoint) {
-					const transparentMaterial = new MeshStandardMaterial({
-						color: new Color("white"),
-						transparent: true,
-						opacity: 0,
-					});
+				this.hairMaterial = new MeshStandardMaterial();
 
-					if (firstPersonPoint.isMesh) {
-						firstPersonPoint.material = transparentMaterial;
+				this.model.traverse((child) => {
+					if (child.isSkinnedMesh && child.name.startsWith("Hair")) {
+						this.hairs.set(child.name, child);
+						child.visible = false;
+						child.material = this.hairMaterial;
+					} else if (child.name.startsWith("FirstPersonPoint")) {
+						child.visible = false;
+					} else {
+						child.material = this.avatarMaterial;
 					}
+				});
 
-					//scene.remove(firstPersonPoint)
-				}
+
+				scene.add(gltf.scene);
 
 				const physics = Experience.get().getPhysicsManager();
 				const rapier = physics.getRapier();
@@ -86,75 +96,47 @@ export class Avatar extends Model {
 				this.lights.init(scene);
 				this.controls.init();
 
-				this.initDataFromLocalStorage().then(() => {
-					resolve();
-				});
+				this.initDataFromLocalStorage();
+
+				resolve();
 			}, undefined, () => reject());
 		});
 	}
 
-	public async loadHair(id: number, path: string): Promise<void> {
-		if (this.hair) {
-			if (this.hairPath === path) {
-				return;
-			}
-
-			this.model.remove(this.hair);
+	public addHair(name: string): void {
+		const hair = this.hairs.get(name);
+		if (!hair) {
+			return;
 		}
 
-		return new Promise((resolve, reject) => {
-			UModelLoader.loadGLTF(path, (gltf: GLTF) => {
-				this.hair = gltf.scene;
-				this.hairPath = path;
+		hair.visible = true;
 
-				const material = new MeshStandardMaterial();
-				this.hair.traverse((node) => {
-					if (node.isMesh) {
-						node.material = material;
-					}
-				});
+		if (!this.localStorageData.hair) {
+			this.localStorageData.hair = {
+				name
+			}
+		} else {
+			this.localStorageData.hair.name = name;
+		}
 
-				this.model.add(this.hair);
-
-				if (!this.localStorageData.hair) {
-					this.localStorageData.hair = {
-						id
-					}
-				}
-
-				this.localStorageData.hair.id = id;
-
-				this.updateDataInLocalStorage();
-
-				resolve();
-			});
-		});
+		this.updateDataInLocalStorage();
 	}
 
 	public changeHairColor(color: string): void {
-		if (this.hair) {
-			const newHairColor = new Color(color);
-			this.hair.traverse((node) => {
-				if (node.isMesh) {
-					node.material.color = newHairColor;
-				}
-			});
+		this.hairMaterial.color = new Color(color);
 
-			if (this.localStorageData.hair) {
-				this.localStorageData.hair.color = color;
-			}
-
-			this.updateDataInLocalStorage();
+		if (this.localStorageData.hair) {
+			this.localStorageData.hair.color = color;
 		}
+
+		this.updateDataInLocalStorage();
 	}
 
 	public removeHair(): void {
-		if (this.hair) {
-			this.model.remove(this.hair);
-			this.hair = undefined;
-			this.hairPath = undefined;
+		if (this.currentHair) {
+			this.currentHair.visible = false;
+			this.currentHair = undefined;
 			this.localStorageData.hair = undefined;
-
 			this.updateDataInLocalStorage();
 		}
 	}
@@ -189,20 +171,11 @@ export class Avatar extends Model {
 		this.controls.moveCameraToDefaultWorldView();
 	}
 
-	private async initDataFromLocalStorage(): Promise<void> {
+	private initDataFromLocalStorage(): void {
 		this.localStorageData = JSON.parse(localStorage.getItem(avatarLocalStorageDataKey) || '{}');
-
-		if (this.hair) {
-			this.model.add(this.hair);
-		} else {
-			const hairData = this.localStorageData?.hair;
-			if (hairData) {
-				await this.loadHair(hairData.id, Vars.PATH.AVATAR.HAIRS[hairData.id]?.MODEL).then(() => {
-					if (hairData?.color) {
-						this.changeHairColor(hairData.color);
-					}
-				});
-			}
+		if (this.localStorageData.hair) {
+			this.addHair(this.localStorageData.hair?.name || '');
+			this.changeHairColor(this.localStorageData.hair?.color || '');
 		}
 	}
 

@@ -1,6 +1,8 @@
 .start-menu-container {
     z-index: 100;
-    background: #5384DA;
+    box-sizing: border-box;
+    background-image: url(../../../../public/images/start-menu/bg.jpg);
+    background-repeat: repeat;
     position: absolute;
     width: 100%;
     height: 50%;
@@ -9,6 +11,7 @@
     align-items: center;
     justify-content: space-between;
     flex-direction: row;
+    box-shadow: 0 0 30px #03375d;
 }
 
 .explorer-container {
@@ -16,6 +19,7 @@
     width: 50%;
     display: flex;
     flex-direction: column;
+    color: #FFFFFF;
 }
 
 .explorer-content {
@@ -43,6 +47,11 @@
     margin-left: 8px;
     border-radius: 8px;
     cursor: pointer;
+    transition: border 0.5ms ease-in-out, box-shadow 0.5ms ease-in-out;
+}
+
+.explorer-button:hover {
+    box-shadow: inset 0 0 0 1px #FFFFFF;
 }
 
 .explorer-switch-msg {

@@ -8,6 +8,7 @@ body {
     position: relative;
     overflow: hidden;
     background: rgba(3, 2, 0, 0.8);
+    font-family: "cerapro", arial, sans-serif;
 }
 
 .webgl {

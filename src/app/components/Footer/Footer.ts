@@ -8,6 +8,7 @@ import { UIcon } from "../../utils/UIcon";
 enum FOOTER_CSS {
 	CONTAINER = "footer-container",
 	LEFT = "footer-left",
+	CENTER = "footer-center",
 	RIGHT = "footer-right",
 	HELP_ICON = "footer-help-icon",
 	HELP_CLOSE_POPOVER_ICON = "footer-popover-help-icon",
@@ -26,6 +27,7 @@ export class Footer extends Component {
 
 	protected buildUI(): void {
 		this.buildLeft();
+		this.buildCenter();
 		this.buildRight();
 	}
 
@@ -37,6 +39,19 @@ export class Footer extends Component {
 		}
 
 		this.mainElement.appendChild(leftContainer);
+	}
+
+	private buildCenter(): void {
+		if (Vars.CURRENT_WORLD) {
+			return;
+		}
+
+		const centerContainer = UDom.div({ className: FOOTER_CSS.CENTER });
+
+		const text = UDom.p({ innerText: "Inspired by LEGO" })
+		UDom.AC(centerContainer, text);
+
+		this.mainElement.appendChild(centerContainer);
 	}
 
 	private buildRight(): void {
@@ -70,6 +85,7 @@ export class Footer extends Component {
 				closePopoverIcon.addEventListener("click", () => {
 					popoverContainer.style.display = "none";
 					localStorage.setItem(HELP_SEEN_LS_KEY, "true");
+					popoverContainer.removeChild(closePopoverIcon);
 					subscribeToListeners();
 				});
 				popoverContainer.appendChild(closePopoverIcon);

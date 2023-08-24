@@ -1,9 +1,10 @@
 import { WorldName } from "./app/models/World/World";
 
+const IMAGES_DIR = "images/";
 const MODELS_DIR = "models/";
 
 const AVATAR_DIR = MODELS_DIR + "avatar/";
-const AVATAR_HAIRS_DIR = MODELS_DIR + "avatar/hairs/";
+const AVATAR_HAIRS_DIR = IMAGES_DIR + "avatar/hairs/";
 
 const SEA_DIR = MODELS_DIR + "sea/";
 const ISLAND_DIR = MODELS_DIR + "island/";
@@ -21,11 +22,17 @@ export class Vars {
 		AVATAR: {
 			MODEL: AVATAR_DIR + "Avatar.glb",
 			HAIRS: {
-				1: {
-					id: 1,
-					MODEL: AVATAR_HAIRS_DIR +"1/Hair1.glb",
-					IMG: AVATAR_HAIRS_DIR + "1/Hair1.png",
+				Hair1: {
+					IMG: AVATAR_HAIRS_DIR + "Hair1.png",
 					COLOR: "#5b3c11"
+				},
+				Hair2: {
+					IMG: AVATAR_HAIRS_DIR + "Hair2.png",
+					COLOR: "#000000"
+				},
+				Hair3: {
+					IMG: AVATAR_HAIRS_DIR + "Hair3.png",
+					COLOR: "#4C241F"
 				}
 			}
 		},

@@ -4,7 +4,7 @@ import {
 	AnimationMixer,
 	Clock,
 	Group,
-	LoopOnce,
+	LoopOnce, Mesh,
 	PerspectiveCamera,
 	Quaternion,
 	Vector3
@@ -19,6 +19,7 @@ import { Ray, RigidBody, Vector, World } from '@dimforge/rapier3d';
 import { COLLISION_GROUP, GRAVITY } from "../../managers/all/PhysicsManager";
 import { AVATAR_EDITOR_VIEW } from "../../components/AvatarEditor/AvatarEditor";
 import { AvatarData } from "./AvatarData";
+import * as child_process from "child_process";
 
 enum CONTROLS {
 	THIRD_PERSON,
@@ -144,9 +145,15 @@ export class AvatarControls {
 					}
 				});
 			}
+
 		}
 
-		this.firstPersonPoint = this.avatar.children.find((child) => child.name == "FirstPersonPoint")
+		this.avatar.traverse(child => {
+			if (child.name.startsWith("First")) {
+				this.firstPersonPoint = child
+				//this.firstPersonPoint.visible = false;
+			}
+		})
 
 		this.firstPersonControls = new PointerLockControls(Experience.get().getCameraManager().getCamera(), document.body);
 		this.firstPersonControls.minPolarAngle = .3;
@@ -345,6 +352,8 @@ export class AvatarControls {
 		this.animationMixer.update(delta);
 		this.walkDirection.x = this.walkDirection.y = this.walkDirection.z = 0
 
+		const translation = this.rigidBody.translation();
+
 		let velocity = 0;
 		if (this.walkAnimationPlaying || this.runAnimationPlaying || this.firstAnimate) {
 
@@ -385,7 +394,6 @@ export class AvatarControls {
 
 			velocity = this.walkAnimationPlaying ? this.walkVelocity : this.runVelocity;
 
-			const translation = this.rigidBody.translation();
 			const cameraPositionOffset = this.camera.position.sub(this.avatar.position);
 
 			// Update model and camera

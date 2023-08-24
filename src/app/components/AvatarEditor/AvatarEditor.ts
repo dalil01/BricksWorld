@@ -58,7 +58,14 @@ export class AvatarEditor extends Component {
 			Experience.get().getModelManager().getAvatar().moveCameraToLegsView();
 		});
 
-		UDom.AC(this.mainElement, UDom.AC(header, modelsBtn, headBtn, chestBtn, legsBtn));
+		UDom.AC(this.mainElement,
+			UDom.AC(header,
+				UDom.AC(UDom.div(), modelsBtn),
+				UDom.AC(UDom.div(), headBtn),
+				UDom.AC(UDom.div(), chestBtn),
+				UDom.AC(UDom.div(), legsBtn)
+			)
+		);
 
 		this.content = UDom.div({ className: AVATAR_EDITOR_CSS.CONTENT });
 		this.buildModels();
@@ -108,25 +115,26 @@ export class AvatarEditor extends Component {
 		const noneHairImg = UIcon.doNotDisturb();
 		UDom.AC(container, UDom.AC(noneHairDiv, noneHairImg));
 
-		for (const hairPath of Object.values(Vars.PATH.AVATAR.HAIRS)) {
+		let currentColor = Experience.get().getModelManager().getAvatar().getHairColor();
+		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.HAIRS)) {
 			const hairDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
 			hairDiv.addEventListener("click", () => {
 				const avatar = Experience.get().getModelManager().getAvatar();
-				avatar.loadHair(hairPath.id, hairPath.MODEL).then(() => {
-					avatar.changeHairColor(hairPath.COLOR);
-				})
-			})
+				avatar.addHair(name);
+				avatar.changeHairColor(data.COLOR);
+			});
 
-			const hairImg = UDom.img({ src: hairPath.IMG });
+			const hairImg = UDom.img({ src: data.IMG });
 
 			UDom.AC(container, UDom.AC(hairDiv, hairImg));
 		}
 
 		this.content.appendChild(container);
 
-		const hairColor = UDom.input({ type: "color", className: AVATAR_EDITOR_CSS.COLOR });
+		const hairColor = UDom.input({ type: "color", value: currentColor, className: AVATAR_EDITOR_CSS.COLOR });
 		hairColor.addEventListener("input", (e) => {
-			Experience.get().getModelManager().getAvatar().changeHairColor(hairColor.value);
+			currentColor = hairColor.value;
+			Experience.get().getModelManager().getAvatar().changeHairColor(currentColor);
 		});
 		UDom.AC(this.content, hairColor);
 	}
