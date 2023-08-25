@@ -17,6 +17,10 @@ type avatarLocalStorageData = {
 	hair?: {
 		name: string,
 		color?: string
+	},
+	brows?: {
+		name: string,
+		color?: string
 	}
 }
 
@@ -29,6 +33,10 @@ export class Avatar extends Model {
 	private hairs: Map<string, SkinnedMesh> = new Map();
 	private currentHair: undefined | SkinnedMesh;
 	private hairMaterial!: MeshStandardMaterial;
+
+	private brows: Map<string, SkinnedMesh> = new Map();
+	private currentBrows: undefined | SkinnedMesh;
+	private browsMaterial!: MeshStandardMaterial;
 
 	private lights: AvatarLights;
 	private controls!: AvatarControls;
@@ -51,6 +59,10 @@ export class Avatar extends Model {
 		return this.localStorageData?.hair?.color;
 	}
 
+	public getBrowsColor(): undefined | string {
+		return this.localStorageData?.brows?.color;
+	}
+
 	public override load(scene: Scene): Promise<void> {
 		switch (Vars.CURRENT_WORLD) {
 			case WorldName.PALM_ISLAND:
@@ -66,19 +78,23 @@ export class Avatar extends Model {
 				this.avatarMaterial.color = new Color("#FFCF00")
 
 				this.hairMaterial = new MeshStandardMaterial();
+				this.browsMaterial = new MeshStandardMaterial({ color: new Color("#000000")});
 
 				this.model.traverse((child) => {
 					if (child.isSkinnedMesh && child.name.startsWith("Hair")) {
 						this.hairs.set(child.name, child);
 						child.visible = false;
 						child.material = this.hairMaterial;
+					} else if (child.name.startsWith("Brows")) {
+						this.brows.set(child.name, child);
+						child.visible = false;
+						child.material = this.browsMaterial;
 					} else if (child.name.startsWith("FirstPersonPoint")) {
 						child.visible = false;
 					} else {
 						child.material = this.avatarMaterial;
 					}
 				});
-
 
 				scene.add(gltf.scene);
 
@@ -109,7 +125,12 @@ export class Avatar extends Model {
 			return;
 		}
 
-		hair.visible = true;
+		if (this.currentHair) {
+			this.currentHair.visible = false;
+		}
+
+		this.currentHair = hair;
+		this.currentHair.visible = true;
 
 		if (!this.localStorageData.hair) {
 			this.localStorageData.hair = {
@@ -137,6 +158,51 @@ export class Avatar extends Model {
 			this.currentHair.visible = false;
 			this.currentHair = undefined;
 			this.localStorageData.hair = undefined;
+			this.updateDataInLocalStorage();
+		}
+	}
+
+	public addBrows(name: string): void {
+		console.log("okko", this.brows)
+
+		const brows = this.brows.get(name);
+		if (!brows) {
+			return;
+		}
+
+		if (this.currentBrows) {
+			this.currentBrows.visible = false;
+		}
+
+		this.currentBrows = brows;
+		this.currentBrows.visible = true;
+
+		if (!this.localStorageData.brows) {
+			this.localStorageData.brows = {
+				name
+			}
+		} else {
+			this.localStorageData.brows.name = name;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeBrowsColor(color: string): void {
+		this.browsMaterial.color = new Color(color);
+
+		if (this.localStorageData.brows) {
+			this.localStorageData.brows.color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public removeBrows(): void {
+		if (this.currentBrows) {
+			this.currentBrows.visible = false;
+			this.currentBrows = undefined;
+			this.localStorageData.brows = undefined;
 			this.updateDataInLocalStorage();
 		}
 	}
@@ -173,9 +239,15 @@ export class Avatar extends Model {
 
 	private initDataFromLocalStorage(): void {
 		this.localStorageData = JSON.parse(localStorage.getItem(avatarLocalStorageDataKey) || '{}');
+
 		if (this.localStorageData.hair) {
 			this.addHair(this.localStorageData.hair?.name || '');
 			this.changeHairColor(this.localStorageData.hair?.color || '');
+		}
+
+		if (this.localStorageData.brows) {
+			this.addBrows(this.localStorageData.brows?.name || '');
+			this.changeBrowsColor(this.localStorageData.brows?.color || '');
 		}
 	}
 

@@ -5,7 +5,7 @@
 }
 
 .avatar-editor-header {
-    margin: 32px auto 0 auto;
+    margin: 35px auto 0 auto;
     width: 80%;
     background: #FFCF00;
     border-top-left-radius: 10px;
@@ -101,6 +101,8 @@
     width: 95%;
     margin: 0 auto;
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .avatar-editor-clickable {
@@ -120,6 +122,19 @@
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.78);
 }
 
+.avatar-editor-clickable span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-editor-clickable-min {
+    width: 62px;
+    height: 32px;
+}
+
 .avatar-editor-color {
-    margin: 25px;
+    margin: 25px 0 0 25px;
+    min-height: 25px;
+    max-height: 25px;
 }

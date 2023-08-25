@@ -13,6 +13,7 @@ enum AVATAR_EDITOR_CSS {
 	TITLE = "avatar-editor-title",
 	SUB_CONTENT = "avatar-editor-sub-content",
 	CLICKABLE = "avatar-editor-clickable",
+	CLICKABLE_MIN = "avatar-editor-clickable-min",
 	COLOR = "avatar-editor-color"
 }
 
@@ -99,7 +100,7 @@ export class AvatarEditor extends Component {
 
 	private buildHead(): void {
 		this.buildHairs();
-
+		this.buildBrowns();
 	}
 
 	private buildHairs(): void {
@@ -116,12 +117,15 @@ export class AvatarEditor extends Component {
 		UDom.AC(container, UDom.AC(noneHairDiv, noneHairImg));
 
 		let currentColor = Experience.get().getModelManager().getAvatar().getHairColor();
+		let inputColorChanged = false;
 		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.HAIRS)) {
 			const hairDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
 			hairDiv.addEventListener("click", () => {
 				const avatar = Experience.get().getModelManager().getAvatar();
 				avatar.addHair(name);
-				avatar.changeHairColor(data.COLOR);
+				if (!inputColorChanged) {
+					avatar.changeHairColor(data.COLOR);
+				}
 			});
 
 			const hairImg = UDom.img({ src: data.IMG });
@@ -135,8 +139,50 @@ export class AvatarEditor extends Component {
 		hairColor.addEventListener("input", (e) => {
 			currentColor = hairColor.value;
 			Experience.get().getModelManager().getAvatar().changeHairColor(currentColor);
+			inputColorChanged = true;
 		});
 		UDom.AC(this.content, hairColor);
+	}
+
+	private buildBrowns(): void {
+		const title = UDom.h3({ innerText: "Brows", className: AVATAR_EDITOR_CSS.TITLE });
+		this.content.appendChild(title);
+
+		const container = UDom.div({ className: AVATAR_EDITOR_CSS.SUB_CONTENT });
+
+		const noneBrowsDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE + ' ' + AVATAR_EDITOR_CSS.CLICKABLE_MIN });
+		noneBrowsDiv.addEventListener("click", () => {
+			Experience.get().getModelManager().getAvatar().removeBrows();
+		});
+		const noneBrowsImg = UIcon.doNotDisturb();
+		UDom.AC(container, UDom.AC(noneBrowsDiv, noneBrowsImg));
+
+		let currentColor = Experience.get().getModelManager().getAvatar().getBrowsColor();
+		let inputColorChanged = false;
+		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.BROWS)) {
+			const browsDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE + ' ' + AVATAR_EDITOR_CSS.CLICKABLE_MIN });
+			browsDiv.addEventListener("click", () => {
+				const avatar = Experience.get().getModelManager().getAvatar();
+				avatar.addBrows(name);
+				if (!inputColorChanged) {
+					avatar.changeBrowsColor("#000000");
+				}
+			});
+
+			const browsImg = UDom.img({ src: data.IMG });
+
+			UDom.AC(container, UDom.AC(browsDiv, browsImg));
+		}
+
+		this.content.appendChild(container);
+
+		const browsColor = UDom.input({ type: "color", value: currentColor, className: AVATAR_EDITOR_CSS.COLOR });
+		browsColor.addEventListener("input", (e) => {
+			currentColor = browsColor.value;
+			Experience.get().getModelManager().getAvatar().changeBrowsColor(currentColor);
+			inputColorChanged = true;
+		});
+		UDom.AC(this.content, browsColor);
 	}
 
 	private buildChest(): void {
