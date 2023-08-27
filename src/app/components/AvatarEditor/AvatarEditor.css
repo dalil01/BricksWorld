@@ -133,8 +133,17 @@
     height: 32px;
 }
 
+.avatar-editor-color-container {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-editor-color-container:last-child {
+    margin-bottom: 25px;
+}
+
 .avatar-editor-color {
-    margin: 25px 0 0 25px;
+    margin: 15px 0 0 25px;
     min-height: 25px;
     max-height: 25px;
 }

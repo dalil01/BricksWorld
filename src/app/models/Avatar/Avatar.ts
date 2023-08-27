@@ -14,6 +14,7 @@ import { AvatarData } from "./AvatarData";
 const avatarLocalStorageDataKey = "avatar_data";
 
 type avatarLocalStorageData = {
+	color?: string,
 	hair?: {
 		name: string,
 		color?: string
@@ -26,6 +27,22 @@ type avatarLocalStorageData = {
 		name: string,
 		color?: string
 		irisColor?: string,
+	},
+	mouth?: {
+		name: string,
+		color?: string,
+		teethColor?: string,
+		tongueColor?: string
+	},
+	headExtra?: {
+		name: string,
+		color?: string
+	},
+	chest?: {
+		color: string
+	},
+	legs?: {
+		color: string
 	}
 }
 
@@ -33,20 +50,34 @@ export class Avatar extends Model {
 
 	private data: AvatarData;
 
-	private avatarMaterial!: MeshStandardMaterial;
+	private readonly avatarMaterial!: MeshStandardMaterial;
 
-	private hairs: Map<string, SkinnedMesh> = new Map();
+	private readonly hairs: Map<string, SkinnedMesh> = new Map();
 	private currentHair: undefined | SkinnedMesh;
-	private hairMaterial!: MeshStandardMaterial;
+	private readonly hairMaterial!: MeshStandardMaterial;
 
-	private brows: Map<string, SkinnedMesh> = new Map();
+	private readonly brows: Map<string, SkinnedMesh> = new Map();
 	private currentBrows: undefined | SkinnedMesh;
-	private browsMaterial!: MeshStandardMaterial;
+	private readonly browsMaterial!: MeshStandardMaterial;
 
-	private eyes: Map<string, SkinnedMesh> = new Map();
+	private readonly eyes: Map<string, SkinnedMesh> = new Map();
 	private currentEyes: undefined | SkinnedMesh;
-	private eyesMaterial!: MeshStandardMaterial;
-	private eyesIrisMaterial!: MeshStandardMaterial;
+	private readonly eyesMaterial!: MeshStandardMaterial;
+	private readonly eyesIrisMaterial!: MeshStandardMaterial;
+
+	private readonly mouths: Map<string, SkinnedMesh> = new Map();
+	private currentMouth: undefined | SkinnedMesh;
+	private readonly mouthMaterial!: MeshStandardMaterial;
+	private readonly mouthTeethMaterial!: MeshStandardMaterial;
+	private readonly mouthTongueMaterial!: MeshStandardMaterial;
+
+	private readonly headExtras: Map<string, SkinnedMesh> = new Map();
+	private currentHeadExtra: undefined | SkinnedMesh;
+	private readonly headExtraMaterial!: MeshStandardMaterial;
+
+	private readonly chestMaterial!: MeshStandardMaterial;
+
+	private readonly legsMaterial!: MeshStandardMaterial;
 
 	private lights: AvatarLights;
 	private controls!: AvatarControls;
@@ -58,6 +89,19 @@ export class Avatar extends Model {
 	public constructor(data: AvatarData = new AvatarData()) {
 		super();
 		this.data = data;
+
+		this.avatarMaterial = new MeshStandardMaterial({ color: new Color("#FFCF00")});
+		this.hairMaterial = new MeshStandardMaterial({ color: new Color("#000000") });
+		this.browsMaterial = new MeshStandardMaterial({ color: new Color("#000000") });
+		this.eyesMaterial = new MeshStandardMaterial({ color: new Color("#000000") });
+		this.eyesIrisMaterial = new MeshStandardMaterial({ color: new Color("#FFFFFF") });
+		this.mouthMaterial = new MeshStandardMaterial({ color: new Color("#000000") });
+		this.mouthTeethMaterial = new MeshStandardMaterial({ color: new Color("#FFFFFF") });
+		this.mouthTongueMaterial = new MeshStandardMaterial({ color: new Color("#FF0000") });
+		this.headExtraMaterial = new MeshStandardMaterial({ color: new Color("#000000") });
+		this.chestMaterial = new MeshStandardMaterial({ color: this.avatarMaterial.color });
+		this.legsMaterial = new MeshStandardMaterial({ color: this.avatarMaterial.color });
+
 		this.lights = new AvatarLights();
 	}
 
@@ -65,20 +109,48 @@ export class Avatar extends Model {
 		this.viewManager = Experience.get().getViewManager();
 	}
 
-	public getHairColor(): undefined | string {
-		return this.localStorageData?.hair?.color;
+	public getColor(): string {
+		return this.localStorageData?.color || '#' + this.avatarMaterial.color.getHexString();
 	}
 
-	public getBrowsColor(): undefined | string {
-		return this.localStorageData?.brows?.color;
+	public getHairColor(): string {
+		return this.localStorageData?.hair?.color || '#' + this.hairMaterial.color.getHexString();
 	}
 
-	public getEyesColor(): undefined | string {
-		return this.localStorageData?.eyes?.color;
+	public getBrowsColor(): string {
+		return this.localStorageData?.brows?.color || '#' + this.browsMaterial.color.getHexString();
 	}
 
-	public getEyesIrisColor(): undefined | string {
-		return this.localStorageData?.eyes?.irisColor;
+	public getEyesColor(): string {
+		return this.localStorageData?.eyes?.color || '#' + this.eyesMaterial.color.getHexString();
+	}
+
+	public getEyesIrisColor(): string {
+		return this.localStorageData?.eyes?.irisColor || '#' + this.eyesIrisMaterial.color.getHexString();
+	}
+
+	public getMouthColor(): string {
+		return this.localStorageData?.mouth?.color || '#' + this.mouthMaterial.color.getHexString();
+	}
+
+	public getMouthTeethColor(): string {
+		return this.localStorageData?.mouth?.teethColor || '#' + this.mouthTeethMaterial.color.getHexString();
+	}
+
+	public getMouthTongueColor(): string {
+		return this.localStorageData?.mouth?.tongueColor || '#' + this.mouthTongueMaterial.color.getHexString();
+	}
+
+	public getHeadExtraColor(): string {
+		return this.localStorageData?.headExtra?.color || '#' + this.headExtraMaterial.color.getHexString();
+	}
+
+	public getChestColor(): string {
+		return this.localStorageData?.chest?.color || '#' + this.chestMaterial.color.getHexString();
+	}
+
+	public getLegsColor(): string {
+		return this.localStorageData?.legs?.color || '#' + this.legsMaterial.color.getHexString();
 	}
 
 	public override load(scene: Scene): Promise<void> {
@@ -91,14 +163,6 @@ export class Avatar extends Model {
 		return new Promise((resolve, reject) => {
 			UModelLoader.loadGLTF(Vars.PATH.AVATAR.MODEL, (gltf: GLTF) => {
 				this.model = gltf.scene;
-
-				this.avatarMaterial = new MeshStandardMaterial();
-				this.avatarMaterial.color = new Color("#FFCF00")
-
-				this.hairMaterial = new MeshStandardMaterial();
-				this.browsMaterial = new MeshStandardMaterial({ color: new Color("#000000")});
-				this.eyesMaterial = new MeshStandardMaterial({ color: new Color("#000000")});
-				this.eyesIrisMaterial = new MeshStandardMaterial({ color: new Color("#FFFFFF")});
 
 				this.model.traverse((child) => {
 					if (child.isSkinnedMesh && child.name.startsWith("Hair")) {
@@ -113,6 +177,24 @@ export class Avatar extends Model {
 						this.eyes.set(child.name, child);
 						child.visible = false;
 						child.material = child.name.includes("Iris") ? this.eyesIrisMaterial : this.eyesMaterial;
+					} else if (child.name.startsWith("Mouth")) {
+						this.mouths.set(child.name, child);
+						child.visible = false;
+						if (child.name.includes("Teeth")) {
+							child.material = this.mouthTeethMaterial;
+						} else if (child.name.includes("Tongue")) {
+							child.material = this.mouthTongueMaterial;
+						} else {
+							child.material = this.mouthMaterial;
+						}
+					} else if (child.name.startsWith("HeadExtra")) {
+						this.headExtras.set(child.name, child);
+						child.visible = false;
+						child.material = this.headExtraMaterial;
+					} else if (child.name.startsWith("Torso") || child.name.includes("Arm")) {
+						child.material = this.chestMaterial;
+					}  else if (child.name.startsWith("Hip") || child.name.includes("Leg")) {
+						child.material = this.legsMaterial;
 					} else if (child.name.startsWith("FirstPersonPoint")) {
 						child.visible = false;
 					} else {
@@ -141,6 +223,12 @@ export class Avatar extends Model {
 				resolve();
 			}, undefined, () => reject());
 		});
+	}
+
+	public changeColor(color: string): void {
+		this.avatarMaterial.color = new Color(color);
+		this.localStorageData.color = color;
+		this.updateDataInLocalStorage();
 	}
 
 	public addHair(name: string): void {
@@ -288,6 +376,146 @@ export class Avatar extends Model {
 		}
 	}
 
+	public addMouth(name: string): void {
+		const mouth = this.mouths.get(name);
+		if (!mouth) {
+			return;
+		}
+
+		if (this.currentMouth) {
+			this.currentMouth.visible = false;
+			for (const child of this.currentMouth.children) {
+				child.visible = false;
+			}
+		}
+
+		this.currentMouth = mouth;
+		this.currentMouth.visible = true;
+		for (const child of this.currentMouth.children) {
+			child.visible = true;
+		}
+
+		if (!this.localStorageData.mouth) {
+			this.localStorageData.mouth = {
+				name
+			}
+		} else {
+			this.localStorageData.mouth.name = name;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeMouthColor(color: string): void {
+		this.mouthMaterial.color = new Color(color);
+
+		if (this.localStorageData.mouth) {
+			this.localStorageData.mouth.color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeMouthTeethColor(color: string): void {
+		this.mouthTeethMaterial.color = new Color(color);
+
+		if (this.localStorageData.mouth) {
+			this.localStorageData.mouth.teethColor = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeMouthTongueColor(color: string): void {
+		this.mouthTongueMaterial.color = new Color(color);
+
+		if (this.localStorageData.mouth) {
+			this.localStorageData.mouth.tongueColor = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public removeMouth(): void {
+		if (this.currentMouth) {
+			this.currentMouth.visible = false;
+			this.currentMouth = undefined;
+			this.localStorageData.mouth = undefined;
+			this.updateDataInLocalStorage();
+		}
+	}
+
+	public addHeadExtra(name: string): void {
+		const headExtra = this.headExtras.get(name);
+		if (!headExtra) {
+			return;
+		}
+
+		if (this.currentHeadExtra) {
+			this.currentHeadExtra.visible = false;
+		}
+
+		this.currentHeadExtra = headExtra;
+		this.currentHeadExtra.visible = true;
+
+		if (!this.localStorageData.headExtra) {
+			this.localStorageData.headExtra = {
+				name
+			};
+		} else {
+			this.localStorageData.headExtra.name = name;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeHeadExtraColor(color: string): void {
+		this.headExtraMaterial.color = new Color(color);
+
+		if (this.localStorageData.headExtra) {
+			this.localStorageData.headExtra.color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public removeHeadExtra(): void {
+		if (this.currentHeadExtra) {
+			this.currentHeadExtra.visible = false;
+			this.currentHeadExtra = undefined;
+			this.localStorageData.headExtra = undefined;
+			this.updateDataInLocalStorage();
+		}
+	}
+
+	public changeChestColor(color: string): void {
+		this.chestMaterial.color = new Color(color);
+
+		if (!this.localStorageData.chest) {
+			this.localStorageData.chest = {
+				color
+			};
+		} else {
+			this.localStorageData.chest.color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeLegsColor(color: string): void {
+		this.legsMaterial.color = new Color(color);
+
+		if (!this.localStorageData.legs) {
+			this.localStorageData.legs = {
+				color
+			};
+		} else {
+			this.localStorageData.legs.color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
 	public override update(): void {
 		this.controls?.update();
 	}
@@ -335,6 +563,26 @@ export class Avatar extends Model {
 			this.addEyes(this.localStorageData.eyes?.name || '');
 			this.changeEyesColor(this.localStorageData.eyes?.color || '');
 			this.changeEyesIrisColor(this.localStorageData.eyes?.irisColor || '');
+		}
+
+		if (this.localStorageData.mouth) {
+			this.addMouth(this.localStorageData.mouth?.name || '');
+			this.changeMouthColor(this.localStorageData.mouth?.color || '');
+			this.changeMouthTeethColor(this.localStorageData.mouth?.teethColor || '');
+			this.changeMouthTongueColor(this.localStorageData.mouth?.tongueColor || '');
+		}
+
+		if (this.localStorageData.headExtra) {
+			this.addHeadExtra(this.localStorageData.headExtra?.name || '');
+			this.changeHeadExtraColor(this.localStorageData.headExtra?.color || '');
+		}
+
+		if (this.localStorageData.chest) {
+			this.changeChestColor(this.localStorageData.chest?.color || '');
+		}
+
+		if (this.localStorageData.legs) {
+			this.changeLegsColor(this.localStorageData.legs?.color || '');
 		}
 	}
 
