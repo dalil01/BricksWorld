@@ -39,7 +39,10 @@ type avatarLocalStorageData = {
 		color?: string
 	},
 	chest?: {
-		color: string
+		name?: string,
+		color?: string
+		obj1Color?: string
+		obj2Color?: string
 	},
 	legs?: {
 		color: string
@@ -76,6 +79,10 @@ export class Avatar extends Model {
 	private readonly headExtraMaterial!: MeshStandardMaterial;
 
 	private readonly chestMaterial!: MeshStandardMaterial;
+	private readonly chests: Map<string, SkinnedMesh> = new Map();
+	private currentChest: undefined | SkinnedMesh;
+	private readonly chestObj1Material!: MeshStandardMaterial;
+	private readonly chestObj2Material!: MeshStandardMaterial;
 
 	private readonly legsMaterial!: MeshStandardMaterial;
 
@@ -100,6 +107,8 @@ export class Avatar extends Model {
 		this.mouthTongueMaterial = new MeshStandardMaterial({ color: new Color("#FF0000") });
 		this.headExtraMaterial = new MeshStandardMaterial({ color: new Color("#000000") });
 		this.chestMaterial = new MeshStandardMaterial({ color: this.avatarMaterial.color });
+		this.chestObj1Material = new MeshStandardMaterial({ color: new Color("#000000") });
+		this.chestObj2Material = new MeshStandardMaterial({ color: new Color("#D01012") });
 		this.legsMaterial = new MeshStandardMaterial({ color: this.avatarMaterial.color });
 
 		this.lights = new AvatarLights();
@@ -149,6 +158,14 @@ export class Avatar extends Model {
 		return this.localStorageData?.chest?.color || '#' + this.chestMaterial.color.getHexString();
 	}
 
+	public getChestObj1Color(): string {
+		return this.localStorageData?.chest?.obj1Color || '#' + this.chestObj1Material.color.getHexString();
+	}
+
+	public getChestObj2Color(): string {
+		return this.localStorageData?.chest?.obj2Color || '#' + this.chestObj2Material.color.getHexString();
+	}
+
 	public getLegsColor(): string {
 		return this.localStorageData?.legs?.color || '#' + this.legsMaterial.color.getHexString();
 	}
@@ -195,6 +212,11 @@ export class Avatar extends Model {
 						child.material = this.chestMaterial;
 					}  else if (child.name.startsWith("Hip") || child.name.includes("Leg")) {
 						child.material = this.legsMaterial;
+					} else if (child.name.startsWith("Chest")) {
+						console.log(child.name)
+						this.chests.set(child.name, child);
+						child.visible = false;
+						child.material = child.name.includes('_') ? this.chestObj2Material : this.chestObj1Material;
 					} else if (child.name.startsWith("FirstPersonPoint")) {
 						child.visible = false;
 					} else {
@@ -488,6 +510,36 @@ export class Avatar extends Model {
 		}
 	}
 
+	public addChest(name: string): void {
+		const chest = this.chests.get(name);
+		if (!chest) {
+			return;
+		}
+
+		if (this.currentChest) {
+			this.currentChest.visible = false;
+			for (const child of this.currentChest.children) {
+				child.visible = false;
+			}
+		}
+
+		this.currentChest = chest;
+		this.currentChest.visible = true;
+		for (const child of this.currentChest.children) {
+			child.visible = true;
+		}
+
+		if (!this.localStorageData.chest) {
+			this.localStorageData.chest = {
+				name
+			};
+		} else {
+			this.localStorageData.chest.name = name;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
 	public changeChestColor(color: string): void {
 		this.chestMaterial.color = new Color(color);
 
@@ -500,6 +552,45 @@ export class Avatar extends Model {
 		}
 
 		this.updateDataInLocalStorage();
+	}
+
+	public changeChestObj1Color(color: string): void {
+		this.chestObj1Material.color = new Color(color);
+
+		if (!this.localStorageData.chest) {
+			this.localStorageData.chest = {
+				obj1Color: color
+			};
+		} else {
+			this.localStorageData.chest.obj1Color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeChestObj2Color(color: string): void {
+		this.chestObj2Material.color = new Color(color);
+
+		if (!this.localStorageData.chest) {
+			this.localStorageData.chest = {
+				obj2Color: color
+			};
+		} else {
+			this.localStorageData.chest.obj2Color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public removeChest(): void {
+		if (this.currentChest) {
+			this.currentChest.visible = false;
+			this.currentChest = undefined;
+			if (this.localStorageData.chest) {
+				this.localStorageData.chest.name = undefined;
+			}
+			this.updateDataInLocalStorage();
+		}
 	}
 
 	public changeLegsColor(color: string): void {
@@ -578,7 +669,10 @@ export class Avatar extends Model {
 		}
 
 		if (this.localStorageData.chest) {
+			this.addChest(this.localStorageData.chest?.name || '');
 			this.changeChestColor(this.localStorageData.chest?.color || '');
+			this.changeChestObj1Color(this.localStorageData.chest?.obj1Color || '');
+			this.changeChestObj2Color(this.localStorageData.chest?.obj2Color || '');
 		}
 
 		if (this.localStorageData.legs) {

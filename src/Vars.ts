@@ -3,12 +3,17 @@ import { WorldName } from "./app/models/World/World";
 const IMAGES_DIR = "images/";
 const MODELS_DIR = "models/";
 
-const AVATAR_DIR = MODELS_DIR + "avatar/";
-const AVATAR_HAIRS_DIR = IMAGES_DIR + "avatar/hairs/";
-const AVATAR_BROWS_DIR = IMAGES_DIR + "avatar/brows/";
-const AVATAR_EYES_DIR = IMAGES_DIR + "avatar/eyes/";
-const AVATAR_MOUTHS_DIR = IMAGES_DIR + "avatar/mouths/";
-const AVATAR_HEAD_EXTRAS_DIR = IMAGES_DIR + "avatar/head-extras/";
+const AVATAR_IMAGES_DIR = IMAGES_DIR + "avatar/";
+const AVATAR_MODELS_DIR = MODELS_DIR + "avatar/";
+
+const AVATAR_HEAD_DIR = AVATAR_IMAGES_DIR + "head/";
+const AVATAR_HAIRS_DIR = AVATAR_HEAD_DIR + "hairs/";
+const AVATAR_BROWS_DIR = AVATAR_HEAD_DIR + "brows/";
+const AVATAR_EYES_DIR = AVATAR_HEAD_DIR + "eyes/";
+const AVATAR_MOUTHS_DIR = AVATAR_HEAD_DIR + "mouths/";
+const AVATAR_HEAD_EXTRAS_DIR = AVATAR_HEAD_DIR + "head-extras/";
+
+const AVATAR_CHEST_DIR = AVATAR_IMAGES_DIR + "chest/";
 
 const SEA_DIR = MODELS_DIR + "sea/";
 const ISLAND_DIR = MODELS_DIR + "island/";
@@ -24,7 +29,7 @@ export class Vars {
 	public static PATH = {
 		DRACO: "draco/",
 		AVATAR: {
-			MODEL: AVATAR_DIR + "Avatar.glb",
+			MODEL: AVATAR_MODELS_DIR + "Avatar.glb",
 			HAIRS: {
 				Hair1: {
 					IMG: AVATAR_HAIRS_DIR + "Hair1.png",
@@ -118,6 +123,17 @@ export class Vars {
 			HEAD_EXTRAS: {
 				HeadExtra1Glasses: {
 					IMG: AVATAR_HEAD_EXTRAS_DIR + "HeadExtra1Glasses.png"
+				}
+			},
+			CHESTS: {
+				Chest1: {
+					IMG: AVATAR_CHEST_DIR + "Chest1.png"
+				},
+				Chest2: {
+					IMG: AVATAR_CHEST_DIR + "Chest2.png"
+				},
+				Chest3: {
+					IMG: AVATAR_CHEST_DIR + "Chest3.png"
 				}
 			}
 		},

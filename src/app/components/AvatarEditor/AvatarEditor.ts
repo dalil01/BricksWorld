@@ -239,7 +239,12 @@ export class AvatarEditor extends Component {
 		});
 		UDom.AC(eyesColorContainer, eyesColor);
 
-		const eyesIrisColor = UDom.input({ type: "color", value: currentIrisColor, className: AVATAR_EDITOR_CSS.COLOR, title: "Iris color" });
+		const eyesIrisColor = UDom.input({
+			type: "color",
+			value: currentIrisColor,
+			className: AVATAR_EDITOR_CSS.COLOR,
+			title: "Iris color"
+		});
 		eyesIrisColor.addEventListener("input", (e) => {
 			currentIrisColor = eyesIrisColor.value;
 			Experience.get().getModelManager().getAvatar().changeEyesIrisColor(currentIrisColor);
@@ -291,14 +296,24 @@ export class AvatarEditor extends Component {
 		});
 		UDom.AC(mouthColorContainer, mouthColor);
 
-		const mouthTeethColor = UDom.input({ type: "color", value: currentTeethColor, className: AVATAR_EDITOR_CSS.COLOR, title: "Teeth color" });
+		const mouthTeethColor = UDom.input({
+			type: "color",
+			value: currentTeethColor,
+			className: AVATAR_EDITOR_CSS.COLOR,
+			title: "Teeth color"
+		});
 		mouthTeethColor.addEventListener("input", (e) => {
 			currentTeethColor = mouthTeethColor.value;
 			Experience.get().getModelManager().getAvatar().changeMouthTeethColor(currentTeethColor);
 		});
 		UDom.AC(mouthColorContainer, mouthTeethColor);
 
-		const mouthTongueColor = UDom.input({ type: "color", value: currentTongueColor, className: AVATAR_EDITOR_CSS.COLOR, title: "Tongue color" });
+		const mouthTongueColor = UDom.input({
+			type: "color",
+			value: currentTongueColor,
+			className: AVATAR_EDITOR_CSS.COLOR,
+			title: "Tongue color"
+		});
 		mouthTongueColor.addEventListener("input", (e) => {
 			currentTongueColor = mouthTongueColor.value;
 			Experience.get().getModelManager().getAvatar().changeMouthTongueColor(currentTongueColor);
@@ -351,22 +366,63 @@ export class AvatarEditor extends Component {
 	}
 
 	private buildChest(): void {
-		const container = UDom.div();
+		const title = UDom.h3({ innerText: "Chest", className: AVATAR_EDITOR_CSS.TITLE });
+		this.content.appendChild(title);
+
+		const container = UDom.div({ className: AVATAR_EDITOR_CSS.SUB_CONTENT });
 
 		const avatar = Experience.get().getModelManager().getAvatar();
 
 		let currentColor = avatar.getChestColor();
+		let currentChestObj1Color = avatar.getChestObj1Color();
+		let currentChestObj2Color = avatar.getChestObj2Color();
+
+		const noneChestDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
+		noneChestDiv.addEventListener("click", () => {
+			Experience.get().getModelManager().getAvatar().removeChest();
+		});
+		const noneChestImg = UIcon.doNotDisturb();
+		UDom.AC(container, UDom.AC(noneChestDiv, noneChestImg));
+
+		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.CHESTS)) {
+			const chestDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
+			chestDiv.addEventListener("click", () => {
+				const avatar = Experience.get().getModelManager().getAvatar();
+				avatar.addChest(name);
+			});
+
+			const headExtraImg = UDom.img({ src: data.IMG });
+
+			UDom.AC(container, UDom.AC(chestDiv, headExtraImg));
+		}
+
+		this.content.appendChild(container);
+
+		const chestColorContainer = UDom.div({ className: AVATAR_EDITOR_CSS.COLOR_CONTAINER });
 
 		const chestColor = UDom.input({ type: "color", value: currentColor, className: AVATAR_EDITOR_CSS.COLOR });
 		chestColor.addEventListener("input", (e) => {
 			currentColor = chestColor.value;
 			Experience.get().getModelManager().getAvatar().changeChestColor(currentColor);
 		});
-		UDom.AC(container, chestColor);
+		UDom.AC(chestColorContainer, chestColor);
 
-		this.content.appendChild(container);
+		const chestObj1Color = UDom.input({ type: "color", value: currentChestObj1Color, className: AVATAR_EDITOR_CSS.COLOR });
+		chestObj1Color.addEventListener("input", (e) => {
+			currentChestObj1Color = chestObj1Color.value;
+			Experience.get().getModelManager().getAvatar().changeChestObj1Color(currentChestObj1Color);
+		});
+		UDom.AC(chestColorContainer, chestObj1Color);
+
+		const chestObj2Color = UDom.input({ type: "color", value: currentChestObj2Color, className: AVATAR_EDITOR_CSS.COLOR });
+		chestObj2Color.addEventListener("input", (e) => {
+			currentChestObj2Color = chestObj2Color.value;
+			Experience.get().getModelManager().getAvatar().changeChestObj2Color(currentChestObj2Color);
+		});
+		UDom.AC(chestColorContainer, chestObj2Color);
+
+		UDom.AC(this.content, chestColorContainer);
 	}
-
 
 	private buildLegs(): void {
 		const container = UDom.div();
