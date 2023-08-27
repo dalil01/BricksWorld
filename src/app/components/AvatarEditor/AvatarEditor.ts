@@ -101,6 +101,7 @@ export class AvatarEditor extends Component {
 	private buildHead(): void {
 		this.buildHairs();
 		this.buildBrowns();
+		this.buildEyes();
 	}
 
 	private buildHairs(): void {
@@ -158,15 +159,11 @@ export class AvatarEditor extends Component {
 		UDom.AC(container, UDom.AC(noneBrowsDiv, noneBrowsImg));
 
 		let currentColor = Experience.get().getModelManager().getAvatar().getBrowsColor();
-		let inputColorChanged = false;
 		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.BROWS)) {
 			const browsDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE + ' ' + AVATAR_EDITOR_CSS.CLICKABLE_MIN });
 			browsDiv.addEventListener("click", () => {
 				const avatar = Experience.get().getModelManager().getAvatar();
 				avatar.addBrows(name);
-				if (!inputColorChanged) {
-					avatar.changeBrowsColor("#000000");
-				}
 			});
 
 			const browsImg = UDom.img({ src: data.IMG });
@@ -180,9 +177,53 @@ export class AvatarEditor extends Component {
 		browsColor.addEventListener("input", (e) => {
 			currentColor = browsColor.value;
 			Experience.get().getModelManager().getAvatar().changeBrowsColor(currentColor);
-			inputColorChanged = true;
 		});
 		UDom.AC(this.content, browsColor);
+	}
+
+	private buildEyes(): void {
+		const title = UDom.h3({ innerText: "Eyes", className: AVATAR_EDITOR_CSS.TITLE });
+		this.content.appendChild(title);
+
+		const container = UDom.div({ className: AVATAR_EDITOR_CSS.SUB_CONTENT });
+
+		const noneEyesDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE + ' ' + AVATAR_EDITOR_CSS.CLICKABLE_MIN });
+		noneEyesDiv.addEventListener("click", () => {
+			Experience.get().getModelManager().getAvatar().removeEyes();
+		});
+		const noneEyesImg = UIcon.doNotDisturb();
+		UDom.AC(container, UDom.AC(noneEyesDiv, noneEyesImg));
+
+		let currentColor = Experience.get().getModelManager().getAvatar().getEyesColor();
+		let currentIrisColor = Experience.get().getModelManager().getAvatar().getEyesIrisColor();
+
+		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.EYES)) {
+			const eyesDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE + ' ' + AVATAR_EDITOR_CSS.CLICKABLE_MIN });
+			eyesDiv.addEventListener("click", () => {
+				const avatar = Experience.get().getModelManager().getAvatar();
+				avatar.addEyes(name);
+			});
+
+			const eyesImg = UDom.img({ src: data.IMG });
+
+			UDom.AC(container, UDom.AC(eyesDiv, eyesImg));
+		}
+
+		this.content.appendChild(container);
+
+		const eyesColor = UDom.input({ type: "color", value: currentColor, className: AVATAR_EDITOR_CSS.COLOR });
+		eyesColor.addEventListener("input", (e) => {
+			currentColor = eyesColor.value;
+			Experience.get().getModelManager().getAvatar().changeEyesColor(currentColor);
+		});
+		UDom.AC(this.content, eyesColor);
+
+		const eyesIrisColor = UDom.input({ type: "color", value: currentIrisColor, className: AVATAR_EDITOR_CSS.COLOR });
+		eyesIrisColor.addEventListener("input", (e) => {
+			currentIrisColor = eyesIrisColor.value;
+			Experience.get().getModelManager().getAvatar().changeEyesIrisColor(currentIrisColor);
+		});
+		UDom.AC(this.content, eyesIrisColor);
 	}
 
 	private buildChest(): void {

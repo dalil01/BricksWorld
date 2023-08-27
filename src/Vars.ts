@@ -6,6 +6,7 @@ const MODELS_DIR = "models/";
 const AVATAR_DIR = MODELS_DIR + "avatar/";
 const AVATAR_HAIRS_DIR = IMAGES_DIR + "avatar/hairs/";
 const AVATAR_BROWS_DIR = IMAGES_DIR + "avatar/brows/";
+const AVATAR_EYES_DIR = IMAGES_DIR + "avatar/eyes/";
 const AVATAR_HEAD_EXTRAS_DIR = IMAGES_DIR + "avatar/head-extras/";
 
 const SEA_DIR = MODELS_DIR + "sea/";
@@ -71,6 +72,26 @@ export class Vars {
 				},
 				Brows6: {
 					IMG: AVATAR_BROWS_DIR + "Brows6.png"
+				}
+			},
+			EYES: {
+				Eyes1: {
+					IMG: AVATAR_EYES_DIR + "Eyes1.png"
+				},
+				Eyes2: {
+					IMG: AVATAR_EYES_DIR + "Eyes2.png"
+				},
+				Eyes3: {
+					IMG: AVATAR_EYES_DIR + "Eyes3.png"
+				},
+				Eyes4: {
+					IMG: AVATAR_EYES_DIR + "Eyes4.png"
+				},
+				Eyes5: {
+					IMG: AVATAR_EYES_DIR + "Eyes5.png"
+				},
+				Eyes6: {
+					IMG: AVATAR_EYES_DIR + "Eyes6.png"
 				}
 			},
 

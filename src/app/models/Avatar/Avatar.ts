@@ -21,6 +21,11 @@ type avatarLocalStorageData = {
 	brows?: {
 		name: string,
 		color?: string
+	},
+	eyes?: {
+		name: string,
+		color?: string
+		irisColor?: string,
 	}
 }
 
@@ -37,6 +42,11 @@ export class Avatar extends Model {
 	private brows: Map<string, SkinnedMesh> = new Map();
 	private currentBrows: undefined | SkinnedMesh;
 	private browsMaterial!: MeshStandardMaterial;
+
+	private eyes: Map<string, SkinnedMesh> = new Map();
+	private currentEyes: undefined | SkinnedMesh;
+	private eyesMaterial!: MeshStandardMaterial;
+	private eyesIrisMaterial!: MeshStandardMaterial;
 
 	private lights: AvatarLights;
 	private controls!: AvatarControls;
@@ -63,6 +73,14 @@ export class Avatar extends Model {
 		return this.localStorageData?.brows?.color;
 	}
 
+	public getEyesColor(): undefined | string {
+		return this.localStorageData?.eyes?.color;
+	}
+
+	public getEyesIrisColor(): undefined | string {
+		return this.localStorageData?.eyes?.irisColor;
+	}
+
 	public override load(scene: Scene): Promise<void> {
 		switch (Vars.CURRENT_WORLD) {
 			case WorldName.PALM_ISLAND:
@@ -79,6 +97,8 @@ export class Avatar extends Model {
 
 				this.hairMaterial = new MeshStandardMaterial();
 				this.browsMaterial = new MeshStandardMaterial({ color: new Color("#000000")});
+				this.eyesMaterial = new MeshStandardMaterial({ color: new Color("#000000")});
+				this.eyesIrisMaterial = new MeshStandardMaterial({ color: new Color("#FFFFFF")});
 
 				this.model.traverse((child) => {
 					if (child.isSkinnedMesh && child.name.startsWith("Hair")) {
@@ -89,6 +109,10 @@ export class Avatar extends Model {
 						this.brows.set(child.name, child);
 						child.visible = false;
 						child.material = this.browsMaterial;
+					} else if (child.name.startsWith("Eyes")) {
+						this.eyes.set(child.name, child);
+						child.visible = false;
+						child.material = child.name.includes("Iris") ? this.eyesIrisMaterial : this.eyesMaterial;
 					} else if (child.name.startsWith("FirstPersonPoint")) {
 						child.visible = false;
 					} else {
@@ -163,8 +187,6 @@ export class Avatar extends Model {
 	}
 
 	public addBrows(name: string): void {
-		console.log("okko", this.brows)
-
 		const brows = this.brows.get(name);
 		if (!brows) {
 			return;
@@ -203,6 +225,65 @@ export class Avatar extends Model {
 			this.currentBrows.visible = false;
 			this.currentBrows = undefined;
 			this.localStorageData.brows = undefined;
+			this.updateDataInLocalStorage();
+		}
+	}
+
+	public addEyes(name: string): void {
+		const eyes = this.eyes.get(name);
+		if (!eyes) {
+			return;
+		}
+
+		if (this.currentEyes) {
+			this.currentEyes.visible = false;
+			for (const child of this.currentEyes.children) {
+				child.visible = false;
+			}
+		}
+
+		this.currentEyes = eyes;
+		this.currentEyes.visible = true;
+		for (const child of this.currentEyes.children) {
+			child.visible = true;
+		}
+
+		if (!this.localStorageData.eyes) {
+			this.localStorageData.eyes = {
+				name
+			}
+		} else {
+			this.localStorageData.eyes.name = name;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeEyesColor(color: string): void {
+		this.eyesMaterial.color = new Color(color);
+
+		if (this.localStorageData.eyes) {
+			this.localStorageData.eyes.color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public changeEyesIrisColor(color: string): void {
+		this.eyesIrisMaterial.color = new Color(color);
+
+		if (this.localStorageData.eyes) {
+			this.localStorageData.eyes.irisColor = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public removeEyes(): void {
+		if (this.currentEyes) {
+			this.currentEyes.visible = false;
+			this.currentEyes = undefined;
+			this.localStorageData.eyes = undefined;
 			this.updateDataInLocalStorage();
 		}
 	}
@@ -248,6 +329,12 @@ export class Avatar extends Model {
 		if (this.localStorageData.brows) {
 			this.addBrows(this.localStorageData.brows?.name || '');
 			this.changeBrowsColor(this.localStorageData.brows?.color || '');
+		}
+
+		if (this.localStorageData.eyes) {
+			this.addEyes(this.localStorageData.eyes?.name || '');
+			this.changeEyesColor(this.localStorageData.eyes?.color || '');
+			this.changeEyesIrisColor(this.localStorageData.eyes?.irisColor || '');
 		}
 	}
 
