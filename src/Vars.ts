@@ -140,7 +140,25 @@ export class Vars {
 				},
 				Chest5: {
 					IMG: AVATAR_CHEST_DIR + "Chest5.png"
+				},
+				Chest6: {
+					IMG: AVATAR_CHEST_DIR + "Chest6.png"
+				},
+				Chest7: {
+					IMG: AVATAR_CHEST_DIR + "Chest7.png"
+				},
+				Chest8: {
+					IMG: AVATAR_CHEST_DIR + "Chest8.png"
+				},
+				Chest9: {
+					IMG: AVATAR_CHEST_DIR + "Chest9.png"
+				},
+				Chest10: {
+					IMG: AVATAR_CHEST_DIR + "Chest10.png"
 				}
+			},
+			lEGS: {
+
 			}
 		},
 		SEA: {

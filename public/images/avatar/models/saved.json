@@ -1,0 +1,30 @@
+{
+  "chest": {
+	"name": "Chest5",
+	"color": "#c4bbb5",
+	"obj2Color": "#f91a1a",
+	"obj1Color": "#705df2"
+  },
+  "eyes": {
+	"name": "Eyes6",
+	"color": "#000000",
+	"irisColor": ""
+  },
+  "brows": {
+	"name": "Brows4",
+	"color": "#000000"
+  },
+  "hair": {
+	"name": "Hair1",
+	"color": "#0c0a09"
+  },
+  "mouth": {
+	"name": "Mouth1",
+	"color": "#0d0c0c",
+	"teethColor": "",
+	"tongueColor": ""
+  },
+  "legs": {
+	"color": "#705df2"
+  }
+}
