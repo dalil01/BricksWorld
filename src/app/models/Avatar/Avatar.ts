@@ -91,7 +91,6 @@ export class Avatar extends Model {
 	private currentLegs: undefined | SkinnedMesh;
 	private readonly legsObj1Material!: MeshStandardMaterial;
 
-	private lights: AvatarLights;
 	private controls!: AvatarControls;
 
 	private viewManager!: ViewManager;
@@ -116,8 +115,6 @@ export class Avatar extends Model {
 		this.chestObj2Material = new MeshStandardMaterial({ color: new Color("#D01012") });
 		this.legsMaterial = new MeshStandardMaterial({ color: this.avatarMaterial.color });
 		this.legsObj1Material = new MeshStandardMaterial({ color: new Color("#000000") });
-
-		this.lights = new AvatarLights();
 	}
 
 	public override init(): void {
@@ -249,8 +246,6 @@ export class Avatar extends Model {
 				world.createCollider(dynamicCollider, rigidBody.handle);
 
 				this.controls = new AvatarControls(this.model, rigidBody, this.data, gltf.animations);
-
-				this.lights.init(scene);
 				this.controls.init();
 
 				this.initDataFromLocalStorage();

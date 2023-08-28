@@ -6,11 +6,14 @@ import {
 	Scene,
 } from "three";
 import { Vars } from "../../../Vars";
+import { IModelLights } from "../IModelLights";
 
-export class AvatarLights {
+export class AvatarLights implements IModelLights {
 
 	private readonly color = 0xffffff;
 	private readonly intensity = 2;
+
+	private readonly ambientLight: AmbientLight;
 
 	private readonly frontLight: DirectionalLight;
 	private readonly frontLeftLight: DirectionalLight;
@@ -20,6 +23,7 @@ export class AvatarLights {
 	private readonly backRightLight: DirectionalLight;
 
 	public constructor() {
+		this.ambientLight = new AmbientLight(0xffffff, .3);
 		this.frontLight = new DirectionalLight(this.color, this.intensity);
 		this.frontLeftLight = new DirectionalLight(this.color, this.intensity);
 		this.frontRightLight = new DirectionalLight(this.color, this.intensity);
@@ -28,12 +32,8 @@ export class AvatarLights {
 		this.backRightLight = new DirectionalLight(this.color, this.intensity);
 	}
 
-	public init(scene: Scene): void {
-		const ambientLight = new AmbientLight(0xffffff, .3); // Couleur blanche, intensité 0.5
-		scene.add(ambientLight);
-
-		scene.background = new Color( "#FFFFFF" );
-		//scene.background = new Color( "#D01012" );
+	public start(scene: Scene): void {
+		scene.add(this.ambientLight);
 
 		this.frontLight.position.set(0, 30, -30);
 		scene.add(this.frontLight);
@@ -58,7 +58,19 @@ export class AvatarLights {
 		}
 	}
 
-	public initHelpers(scene: Scene): void {
+	public stop(scene: Scene): void {
+		scene.remove(
+			this.ambientLight,
+			this.frontLight,
+			this.frontLeftLight,
+			this.frontRightLight,
+			this.backLight,
+			this.backLeftLight,
+			this.backRightLight
+		);
+	}
+
+	private initHelpers(scene: Scene): void {
 		[this.frontLight, this.frontLeftLight, this.frontRightLight, this.backLight, this.backLeftLight, this.backRightLight].forEach((light) => {
 			const helper = new DirectionalLightHelper(light, 10);
 			scene.add(helper);

@@ -1,5 +1,5 @@
 import {
-	Clock,
+	Clock, Color,
 	GridHelper,
 	PerspectiveCamera,
 	Scene,
@@ -17,6 +17,7 @@ import { PhysicsManager } from "./managers/all/PhysicsManager";
 import { EventManager } from "./managers/all/EventManager";
 import { Loader } from "./components/Loader/Loader";
 import { UDom } from "./utils/UDom";
+import { LightsManager } from "./managers/all/LightsManager";
 
 export type Sizes = {
 	w: number;
@@ -38,6 +39,7 @@ export class Experience {
 	private readonly physicsManager: PhysicsManager;
 	private readonly viewManager: ViewManager;
 	private readonly modelManager: ModelManager;
+	private readonly lightsManager: LightsManager;
 
 	private readonly cameraManager: CameraManager;
 	private readonly camera!: PerspectiveCamera;
@@ -53,6 +55,7 @@ export class Experience {
 		this.loader = new Loader(document.body, true);
 
 		this.scene = new Scene();
+		this.scene.background = new Color( "#D01012" );
 
 		this.autoSetSizes();
 
@@ -67,6 +70,7 @@ export class Experience {
 		this.viewManager = new ViewManager();
 		this.modelManager = new ModelManager();
 		this.cameraManager = new CameraManager(this.sizes, this.renderer.domElement);
+		this.lightsManager = new LightsManager(this.scene);
 
 		this.camera = this.cameraManager.getCamera();
 		this.controls = this.cameraManager.getControls();
@@ -122,6 +126,10 @@ export class Experience {
 		return this.viewManager;
 	}
 
+	public getLightsManager(): LightsManager {
+		return this.lightsManager;
+	}
+
 	public getLilGUI(): GUI {
 		return this.lilGUI;
 	}
@@ -138,6 +146,7 @@ export class Experience {
 			this.modelManager.load(this.scene).then(() => {
 				this.viewManager.start();
 				this.modelManager.start();
+				this.lightsManager.start();
 				this.cameraManager.start();
 
 				this.scene.add(this.camera);
