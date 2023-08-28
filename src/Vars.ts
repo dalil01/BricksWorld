@@ -14,8 +14,8 @@ const AVATAR_MOUTHS_DIR = AVATAR_HEAD_DIR + "mouths/";
 const AVATAR_HEAD_EXTRAS_DIR = AVATAR_HEAD_DIR + "head-extras/";
 
 const AVATAR_CHEST_DIR = AVATAR_IMAGES_DIR + "chest/";
-
 const AVATAR_LEGS_DIR = AVATAR_IMAGES_DIR + "legs/";
+const AVATAR_IMG_MODELS_DIR = AVATAR_IMAGES_DIR + "models/";
 
 const SEA_DIR = MODELS_DIR + "sea/";
 const ISLAND_DIR = MODELS_DIR + "island/";
@@ -169,7 +169,7 @@ export class Vars {
 			},
 			MODELS: {
 				Model1: {
-					IMG: AVATAR_MODELS_DIR + "Model1.png",
+					IMG: AVATAR_IMG_MODELS_DIR + "Model1.png",
 					data: {
 						color: "#FFCF00",
 						hair: {
@@ -195,6 +195,135 @@ export class Vars {
 						},
 						legs: {
 							color: "#705df2"
+						}
+					}
+				},
+				Model2: {
+					IMG: AVATAR_IMG_MODELS_DIR + "Model2.png",
+					data: {
+						hair: {
+							name: "Hair5",
+							color: "#d411cb"
+						},
+						brows: {
+							name: "Brows1",
+							color: "#000000"
+						},
+						eyes: {
+							name: "Eyes2",
+							color: "#000000"
+						},
+						mouth: {
+							name: "Mouth2",
+							color: "#000000",
+							tongueColor: "#ff0000"
+						},
+						chest: {
+							name: "Chest8",
+							color: "#2e2c24",
+							obj1Color: "#ffffff"
+						},
+						legs: {
+							"color": "#1c1c1c"
+						}
+					}
+				},
+				Model3: {
+					IMG: AVATAR_IMG_MODELS_DIR + "Model3.png",
+					data: {
+						color: "#FFCF00",
+						hair: {
+							name: "Hair3",
+							color: "#000000"
+						},
+						brows: {
+							name: "Brows3",
+							color: "#000000"
+						},
+						eyes: {
+							name: "Eyes6",
+							color: "#000000",
+						},
+						mouth: {
+							name: "Mouth1",
+							color: "#0d0c0c"
+						},
+						chest: {
+							name: "Chest1",
+							color: "#1983e6",
+							obj1Color: "#000000",
+							obj2Color: "#ffffff"
+						},
+						legs: {
+							color: "#856057",
+						},
+						headExtra: {
+							name: "HeadExtra1Glasses",
+							color: "#000000",
+						}
+					}
+				},
+				Model4: {
+					IMG: AVATAR_IMG_MODELS_DIR + "Model4.png",
+					data: {
+						color: "#d6d6d6",
+						hair: {
+							name: "Hair4",
+							color: "#ff0000"
+						},
+						brows: {
+							name: "Brows5",
+							color: "#000000"
+						},
+						eyes: {
+							name: "Eyes5",
+							color: "#000000",
+						},
+						mouth: {
+							name: "Mouth5",
+							color: "#0d0c0c"
+						},
+						chest: {
+							name: "Chest6",
+							color: "#ff0000",
+							obj1Color: "#525252",
+						},
+						legs: {
+							color: "#171717",
+							obj1Color: "#ff0000",
+							name: "Legs1"
+						}
+					}
+				},
+				Model5: {
+					IMG: AVATAR_IMG_MODELS_DIR + "Model5.png",
+					data: {
+						color: "#fbac7e",
+						hair: {
+							name: "Hair6",
+							color: "#ffe600"
+						},
+						brows: {
+							name: "Brows4",
+							color: "#000000"
+						},
+						eyes: {
+							name: "Eyes3",
+							color: "#000000",
+						},
+						mouth: {
+							name: "Mouth3",
+							color: "#0d0c0c"
+						},
+						chest: {
+							name: "Chest2",
+							color: "#fe8819",
+							obj1Color: "#000000",
+							obj2Color: "#004cff"
+						},
+						legs: {
+							color: "#fe8819",
+							obj1Color: "#ff0000"
 						}
 					}
 				}

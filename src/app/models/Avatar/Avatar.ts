@@ -16,26 +16,26 @@ const avatarLocalStorageDataKey = "avatar_data";
 export type AvatarLocalStorageData = {
 	color?: string;
 	hair?: {
-		name: string,
+		name?: string,
 		color?: string
 	};
 	brows?: {
-		name: string,
+		name?: string,
 		color?: string
 	};
 	eyes?: {
-		name: string,
+		name?: string,
 		color?: string
 		irisColor?: string,
 	};
 	mouth?: {
-		name: string,
+		name?: string,
 		color?: string,
 		teethColor?: string,
 		tongueColor?: string
 	};
 	headExtra?: {
-		name: string,
+		name?: string,
 		color?: string
 	};
 	chest?: {
@@ -261,6 +261,7 @@ export class Avatar extends Model {
 	}
 
 	public applyModel(data: AvatarLocalStorageData): void {
+		this.removeModel();
 		this.localStorageData = data;
 		this.updateDataInLocalStorage();
 		this.initDataFromLocalStorage();
@@ -280,7 +281,9 @@ export class Avatar extends Model {
 		this.chestMaterial.color = bodyColor;
 		this.legsMaterial.color = bodyColor;
 
-		this.applyModel({ color: bodyColorHex });
+		this.localStorageData = {}
+		this.updateDataInLocalStorage();
+		this.initDataFromLocalStorage();
 	}
 
 	public changeColor(color: string): void {
@@ -347,7 +350,8 @@ export class Avatar extends Model {
 
 		if (!this.localStorageData.brows) {
 			this.localStorageData.brows = {
-				name
+				name,
+				color: '#' + this.browsMaterial.color.getHexString()
 			}
 		} else {
 			this.localStorageData.brows.name = name;
@@ -359,7 +363,9 @@ export class Avatar extends Model {
 	public changeBrowsColor(color: string): void {
 		this.browsMaterial.color = new Color(color);
 
-		if (this.localStorageData.brows) {
+		if (!this.localStorageData.brows) {
+			this.localStorageData.brows = { color };
+		} else {
 			this.localStorageData.brows.color = color;
 		}
 
@@ -396,7 +402,9 @@ export class Avatar extends Model {
 
 		if (!this.localStorageData.eyes) {
 			this.localStorageData.eyes = {
-				name
+				name,
+				color: '#' + this.eyesMaterial.color.getHexString(),
+				irisColor: '#' + this.eyesIrisMaterial.color.getHexString()
 			}
 		} else {
 			this.localStorageData.eyes.name = name;
@@ -455,7 +463,10 @@ export class Avatar extends Model {
 
 		if (!this.localStorageData.mouth) {
 			this.localStorageData.mouth = {
-				name
+				name,
+				color: '#' + this.mouthMaterial.color.getHexString(),
+				teethColor: '#' + this.mouthTeethMaterial.color.getHexString(),
+				tongueColor: '#' + this.mouthTongueMaterial.color.getHexString()
 			}
 		} else {
 			this.localStorageData.mouth.name = name;
@@ -518,7 +529,8 @@ export class Avatar extends Model {
 
 		if (!this.localStorageData.headExtra) {
 			this.localStorageData.headExtra = {
-				name
+				name,
+				color: '#' + this.headExtraMaterial.color.getHexString()
 			};
 		} else {
 			this.localStorageData.headExtra.name = name;
@@ -567,7 +579,10 @@ export class Avatar extends Model {
 
 		if (!this.localStorageData.chest) {
 			this.localStorageData.chest = {
-				name
+				name,
+				color: '#' + this.chestMaterial.color.getHexString(),
+				obj1Color: '#' + this.chestObj1Material.color.getHexString(),
+				obj2Color: '#' + this.chestObj2Material.color.getHexString()
 			};
 		} else {
 			this.localStorageData.chest.name = name;
@@ -650,7 +665,9 @@ export class Avatar extends Model {
 
 		if (!this.localStorageData.legs) {
 			this.localStorageData.legs = {
-				name
+				name,
+				color: '#' + this.legsMaterial.color.getHexString(),
+				obj1Color: '#' + this.legsObj1Material.color.getHexString()
 			};
 		} else {
 			this.localStorageData.legs.name = name;
@@ -730,6 +747,10 @@ export class Avatar extends Model {
 
 	private initDataFromLocalStorage(): void {
 		this.localStorageData = JSON.parse(localStorage.getItem(avatarLocalStorageDataKey) || '{}');
+
+		if (this.localStorageData.color) {
+			this.changeColor(this.localStorageData.color || '');
+		}
 
 		if (this.localStorageData.hair) {
 			this.addHair(this.localStorageData.hair?.name || '');
