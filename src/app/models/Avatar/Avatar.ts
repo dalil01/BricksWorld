@@ -213,7 +213,6 @@ export class Avatar extends Model {
 					}  else if (child.name.startsWith("Hip") || child.name.includes("Leg")) {
 						child.material = this.legsMaterial;
 					} else if (child.name.startsWith("Chest")) {
-						console.log(child.name)
 						this.chests.set(child.name, child);
 						child.visible = false;
 						child.material = child.name.includes('_') ? this.chestObj2Material : this.chestObj1Material;

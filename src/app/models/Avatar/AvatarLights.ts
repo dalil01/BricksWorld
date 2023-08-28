@@ -32,7 +32,8 @@ export class AvatarLights {
 		const ambientLight = new AmbientLight(0xffffff, .3); // Couleur blanche, intensité 0.5
 		scene.add(ambientLight);
 
-		scene.background = new Color( "#D01012" );
+		scene.background = new Color( "#FFFFFF" );
+		//scene.background = new Color( "#D01012" );
 
 		this.frontLight.position.set(0, 30, -30);
 		scene.add(this.frontLight);

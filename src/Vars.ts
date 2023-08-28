@@ -134,6 +134,12 @@ export class Vars {
 				},
 				Chest3: {
 					IMG: AVATAR_CHEST_DIR + "Chest3.png"
+				},
+				Chest4: {
+					IMG: AVATAR_CHEST_DIR + "Chest4.png"
+				},
+				Chest5: {
+					IMG: AVATAR_CHEST_DIR + "Chest5.png"
 				}
 			}
 		},
