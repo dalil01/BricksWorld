@@ -15,6 +15,8 @@ const AVATAR_HEAD_EXTRAS_DIR = AVATAR_HEAD_DIR + "head-extras/";
 
 const AVATAR_CHEST_DIR = AVATAR_IMAGES_DIR + "chest/";
 
+const AVATAR_LEGS_DIR = AVATAR_IMAGES_DIR + "legs/";
+
 const SEA_DIR = MODELS_DIR + "sea/";
 const ISLAND_DIR = MODELS_DIR + "island/";
 
@@ -158,7 +160,44 @@ export class Vars {
 				}
 			},
 			lEGS: {
-
+				Legs1: {
+					IMG: AVATAR_LEGS_DIR + "Legs1.png"
+				},
+				Legs2: {
+					IMG: AVATAR_LEGS_DIR + "Legs2.png"
+				}
+			},
+			MODELS: {
+				Model1: {
+					IMG: AVATAR_MODELS_DIR + "Model1.png",
+					data: {
+						color: "#FFCF00",
+						hair: {
+							name: "Hair1",
+							color: "#0c0a09"
+						},
+						brows: {
+							name: "Brows4",
+							color: "#000000"
+						},
+						eyes: {
+							name: "Eyes6",
+							color: "#000000"
+						},
+						mouth: {
+							name: "Mouth1",
+							color: "#0d0c0c"
+						},
+						chest: {
+							name: "Chest5",
+							color: "#c4bbb5",
+							obj1Color: "#705df2"
+						},
+						legs: {
+							color: "#705df2"
+						}
+					}
+				}
 			}
 		},
 		SEA: {

@@ -13,40 +13,42 @@ import { AvatarData } from "./AvatarData";
 
 const avatarLocalStorageDataKey = "avatar_data";
 
-type avatarLocalStorageData = {
-	color?: string,
+export type AvatarLocalStorageData = {
+	color?: string;
 	hair?: {
 		name: string,
 		color?: string
-	},
+	};
 	brows?: {
 		name: string,
 		color?: string
-	},
+	};
 	eyes?: {
 		name: string,
 		color?: string
 		irisColor?: string,
-	},
+	};
 	mouth?: {
 		name: string,
 		color?: string,
 		teethColor?: string,
 		tongueColor?: string
-	},
+	};
 	headExtra?: {
 		name: string,
 		color?: string
-	},
+	};
 	chest?: {
 		name?: string,
 		color?: string
 		obj1Color?: string
 		obj2Color?: string
-	},
+	};
 	legs?: {
-		color: string
-	}
+		name?: string,
+		color?: string,
+		obj1Color?: string
+	};
 }
 
 export class Avatar extends Model {
@@ -85,13 +87,16 @@ export class Avatar extends Model {
 	private readonly chestObj2Material!: MeshStandardMaterial;
 
 	private readonly legsMaterial!: MeshStandardMaterial;
+	private readonly legs: Map<string, SkinnedMesh> = new Map();
+	private currentLegs: undefined | SkinnedMesh;
+	private readonly legsObj1Material!: MeshStandardMaterial;
 
 	private lights: AvatarLights;
 	private controls!: AvatarControls;
 
 	private viewManager!: ViewManager;
 
-	private localStorageData!: avatarLocalStorageData;
+	private localStorageData!: AvatarLocalStorageData;
 
 	public constructor(data: AvatarData = new AvatarData()) {
 		super();
@@ -110,6 +115,7 @@ export class Avatar extends Model {
 		this.chestObj1Material = new MeshStandardMaterial({ color: new Color("#000000") });
 		this.chestObj2Material = new MeshStandardMaterial({ color: new Color("#D01012") });
 		this.legsMaterial = new MeshStandardMaterial({ color: this.avatarMaterial.color });
+		this.legsObj1Material = new MeshStandardMaterial({ color: new Color("#000000") });
 
 		this.lights = new AvatarLights();
 	}
@@ -170,6 +176,10 @@ export class Avatar extends Model {
 		return this.localStorageData?.legs?.color || '#' + this.legsMaterial.color.getHexString();
 	}
 
+	public getLegsObj1Color(): string {
+		return this.localStorageData?.legs?.obj1Color || '#' + this.legsObj1Material.color.getHexString();
+	}
+
 	public override load(scene: Scene): Promise<void> {
 		switch (Vars.CURRENT_WORLD) {
 			case WorldName.PALM_ISLAND:
@@ -182,7 +192,7 @@ export class Avatar extends Model {
 				this.model = gltf.scene;
 
 				this.model.traverse((child) => {
-					if (child.isSkinnedMesh && child.name.startsWith("Hair")) {
+					if (child.name.startsWith("Hair")) {
 						this.hairs.set(child.name, child);
 						child.visible = false;
 						child.material = this.hairMaterial;
@@ -210,12 +220,16 @@ export class Avatar extends Model {
 						child.material = this.headExtraMaterial;
 					} else if (child.name.startsWith("Torso") || child.name.includes("Arm")) {
 						child.material = this.chestMaterial;
-					}  else if (child.name.startsWith("Hip") || child.name.includes("Leg")) {
+					}  else if (child.name.startsWith("Hip") || child.name.endsWith("Leg") || child.name === "BetweenLegs") {
 						child.material = this.legsMaterial;
 					} else if (child.name.startsWith("Chest")) {
 						this.chests.set(child.name, child);
 						child.visible = false;
 						child.material = child.name.includes('_') ? this.chestObj2Material : this.chestObj1Material;
+					}  else if (child.name.startsWith("Legs")) {
+						this.legs.set(child.name, child);
+						child.visible = false;
+						child.material = this.legsObj1Material;
 					} else if (child.name.startsWith("FirstPersonPoint")) {
 						child.visible = false;
 					} else {
@@ -244,6 +258,29 @@ export class Avatar extends Model {
 				resolve();
 			}, undefined, () => reject());
 		});
+	}
+
+	public applyModel(data: AvatarLocalStorageData): void {
+		this.localStorageData = data;
+		this.updateDataInLocalStorage();
+		this.initDataFromLocalStorage();
+	}
+
+	public removeModel(): void {
+		this.removeHair();
+		this.removeBrows();
+		this.removeEyes();
+		this.removeMouth();
+		this.removeHeadExtra();
+		this.removeChest();
+		this.removeLegs();
+
+		const bodyColorHex = '#' + this.avatarMaterial.color.getHexString();
+		const bodyColor = new Color(bodyColorHex);
+		this.chestMaterial.color = bodyColor;
+		this.legsMaterial.color = bodyColor;
+
+		this.applyModel({ color: bodyColorHex });
 	}
 
 	public changeColor(color: string): void {
@@ -592,6 +629,36 @@ export class Avatar extends Model {
 		}
 	}
 
+	public addLegs(name: string): void {
+		const legs = this.legs.get(name);
+		if (!legs) {
+			return;
+		}
+
+		if (this.currentLegs) {
+			this.currentLegs.visible = false;
+			for (const child of this.currentLegs.children) {
+				child.visible = false;
+			}
+		}
+
+		this.currentLegs = legs;
+		this.currentLegs.visible = true;
+		for (const child of this.currentLegs.children) {
+			child.visible = true;
+		}
+
+		if (!this.localStorageData.legs) {
+			this.localStorageData.legs = {
+				name
+			};
+		} else {
+			this.localStorageData.legs.name = name;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
 	public changeLegsColor(color: string): void {
 		this.legsMaterial.color = new Color(color);
 
@@ -604,6 +671,31 @@ export class Avatar extends Model {
 		}
 
 		this.updateDataInLocalStorage();
+	}
+
+	public changeLegsObj1Color(color: string): void {
+		this.legsObj1Material.color = new Color(color);
+
+		if (!this.localStorageData.legs) {
+			this.localStorageData.legs = {
+				obj1Color: color
+			};
+		} else {
+			this.localStorageData.legs.obj1Color = color;
+		}
+
+		this.updateDataInLocalStorage();
+	}
+
+	public removeLegs(): void {
+		if (this.currentLegs) {
+			this.currentLegs.visible = false;
+			this.currentLegs = undefined;
+			if (this.localStorageData.legs) {
+				this.localStorageData.legs.name = undefined;
+			}
+			this.updateDataInLocalStorage();
+		}
 	}
 
 	public override update(): void {
@@ -675,7 +767,9 @@ export class Avatar extends Model {
 		}
 
 		if (this.localStorageData.legs) {
+			this.addLegs(this.localStorageData.legs?.name || '');
 			this.changeLegsColor(this.localStorageData.legs?.color || '');
+			this.changeLegsObj1Color(this.localStorageData.legs?.obj1Color || '');
 		}
 	}
 

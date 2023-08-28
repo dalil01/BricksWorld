@@ -179,8 +179,7 @@ export class AvatarControls {
 			return;
 		}
 
-		console.log(this.controls.rotateSpeed
-		)
+		// console.log(this.controls.rotateSpeed)
 
 		this.controls.enableDamping = true;
 		this.controls.enablePan = true;

@@ -14,6 +14,7 @@ enum AVATAR_EDITOR_CSS {
 	SUB_CONTENT = "avatar-editor-sub-content",
 	CLICKABLE = "avatar-editor-clickable",
 	CLICKABLE_MIN = "avatar-editor-clickable-min",
+	CLICKABLE_MAX = "avatar-editor-clickable-max",
 	COLOR_CONTAINER = "avatar-editor-color-container",
 	COLOR = "avatar-editor-color"
 }
@@ -95,22 +96,45 @@ export class AvatarEditor extends Component {
 	}
 
 	private buildModels(): void {
-		const container = UDom.div();
+		const title = UDom.h3({ innerText: "Models", className: AVATAR_EDITOR_CSS.TITLE });
+		this.content.appendChild(title);
 
-		const avatar = Experience.get().getModelManager().getAvatar();
+		const container = UDom.div({ className: AVATAR_EDITOR_CSS.SUB_CONTENT });
 
-		let currentColor = avatar.getColor();
+
+		let currentColor = Experience.get().getModelManager().getAvatar().getColor();
+
+		const noneModelsDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE + ' ' + AVATAR_EDITOR_CSS.CLICKABLE_MAX });
+		noneModelsDiv.addEventListener("click", () => {
+			Experience.get().getModelManager().getAvatar().removeModel();
+		});
+		const noneModelsImg = UIcon.doNotDisturb();
+		UDom.AC(container, UDom.AC(noneModelsDiv, noneModelsImg));
+
+		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.MODELS)) {
+			const modelsDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE + ' ' + AVATAR_EDITOR_CSS.CLICKABLE_MAX });
+			modelsDiv.addEventListener("click", () => {
+				const avatar = Experience.get().getModelManager().getAvatar();
+				avatar.applyModel(data.data);
+			});
+
+			const modelsImg = UDom.img({ src: data.IMG });
+
+			UDom.AC(container, UDom.AC(modelsDiv, modelsImg));
+		}
+
+		this.content.appendChild(container);
+
+		const modelsColorContainer = UDom.div({ className: AVATAR_EDITOR_CSS.COLOR_CONTAINER });
 
 		const avatarColor = UDom.input({ type: "color", value: currentColor, className: AVATAR_EDITOR_CSS.COLOR });
 		avatarColor.addEventListener("input", (e) => {
 			currentColor = avatarColor.value;
 			Experience.get().getModelManager().getAvatar().changeColor(currentColor);
 		});
-		UDom.AC(container, avatarColor);
+		UDom.AC(modelsColorContainer, avatarColor);
 
-		this.content.appendChild(container);
-
-		this.content.appendChild(container);
+		UDom.AC(this.content, modelsColorContainer);
 	}
 
 	private buildHead(): void {
@@ -391,9 +415,9 @@ export class AvatarEditor extends Component {
 				avatar.addChest(name);
 			});
 
-			const headExtraImg = UDom.img({ src: data.IMG });
+			const chestImg = UDom.img({ src: data.IMG });
 
-			UDom.AC(container, UDom.AC(chestDiv, headExtraImg));
+			UDom.AC(container, UDom.AC(chestDiv, chestImg));
 		}
 
 		this.content.appendChild(container);
@@ -425,20 +449,54 @@ export class AvatarEditor extends Component {
 	}
 
 	private buildLegs(): void {
-		const container = UDom.div();
+		const title = UDom.h3({ innerText: "Legs", className: AVATAR_EDITOR_CSS.TITLE });
+		this.content.appendChild(title);
+
+		const container = UDom.div({ className: AVATAR_EDITOR_CSS.SUB_CONTENT });
 
 		const avatar = Experience.get().getModelManager().getAvatar();
 
 		let currentColor = avatar.getLegsColor();
+		let currentLegsObj1Color = avatar.getLegsObj1Color();
+
+		const noneLegsDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
+		noneLegsDiv.addEventListener("click", () => {
+			Experience.get().getModelManager().getAvatar().removeLegs();
+		});
+		const noneLegsImg = UIcon.doNotDisturb();
+		UDom.AC(container, UDom.AC(noneLegsDiv, noneLegsImg));
+
+		for (const [name, data] of Object.entries(Vars.PATH.AVATAR.lEGS)) {
+			const legsDiv = UDom.div({ className: AVATAR_EDITOR_CSS.CLICKABLE });
+			legsDiv.addEventListener("click", () => {
+				const avatar = Experience.get().getModelManager().getAvatar();
+				avatar.addLegs(name);
+			});
+
+			const legsImg = UDom.img({ src: data.IMG });
+
+			UDom.AC(container, UDom.AC(legsDiv, legsImg));
+		}
+
+		this.content.appendChild(container);
+
+		const legsColorContainer = UDom.div({ className: AVATAR_EDITOR_CSS.COLOR_CONTAINER });
 
 		const legsColor = UDom.input({ type: "color", value: currentColor, className: AVATAR_EDITOR_CSS.COLOR });
 		legsColor.addEventListener("input", (e) => {
 			currentColor = legsColor.value;
 			Experience.get().getModelManager().getAvatar().changeLegsColor(currentColor);
 		});
-		UDom.AC(container, legsColor);
+		UDom.AC(legsColorContainer, legsColor);
 
-		this.content.appendChild(container);
+		const legsObj1Color = UDom.input({ type: "color", value: currentLegsObj1Color, className: AVATAR_EDITOR_CSS.COLOR });
+		legsObj1Color.addEventListener("input", (e) => {
+			currentLegsObj1Color = legsObj1Color.value;
+			Experience.get().getModelManager().getAvatar().changeLegsObj1Color(currentLegsObj1Color);
+		});
+		UDom.AC(legsColorContainer, legsObj1Color);
+
+		UDom.AC(this.content, legsColorContainer);
 	}
 
 }

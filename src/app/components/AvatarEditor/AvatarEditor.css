@@ -133,6 +133,12 @@
     height: 32px;
 }
 
+
+.avatar-editor-clickable-max {
+    width: 90px;
+    height: 100px;
+}
+
 .avatar-editor-color-container {
     display: flex;
     align-items: center;
