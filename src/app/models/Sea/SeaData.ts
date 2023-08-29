@@ -1,6 +1,6 @@
 export class SeaData {
 
-	size: number = 10;
+	size: number = 12;
 	color: string = "#00D0FF";
 
 }

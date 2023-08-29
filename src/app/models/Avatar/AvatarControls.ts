@@ -105,6 +105,10 @@ export class AvatarControls {
 	private defaultTranslation: Vector3;
 	private validatedTranslation!: Vector;
 
+	private worldCameraPositionOffset!: Vector3;
+	private sceneControlsCameraPositionOffset!: Vector3;
+	private sceneControlsPositionOffset!: Vector3;
+
 	public constructor(model: Group, rigidBody: RigidBody, data: AvatarData, animations: AnimationClip[]) {
 		this.avatar = model;
 		this.animations = animations;
@@ -120,6 +124,9 @@ export class AvatarControls {
 		this.rigidBody = rigidBody;
 		this.rigidBodyRadius = data.rigidBodyRadius;
 		this.defaultTranslation = data.defaultTranslation;
+		this.worldCameraPositionOffset = data.worldCameraPositionOffset;
+		this.sceneControlsCameraPositionOffset = data.sceneControlsCameraPositionOffset;
+		this.sceneControlsPositionOffset = data.sceneControlsPositionOffset;
 		this.world = Experience.get().getPhysicsManager().getWorld();
 	}
 
@@ -159,7 +166,11 @@ export class AvatarControls {
 		this.firstPersonControls.minPolarAngle = .3;
 		this.firstPersonControls.maxPolarAngle = 3;
 		this.firstPersonControls.addEventListener("unlock", () => {
-			this.switchToThirdPersonControls();
+			if (this.currentControls === CONTROLS.SCENE) {
+				this.switchToSceneControls();
+			} else {
+				this.switchToThirdPersonControls();
+			}
 		});
 
 		Experience.get().getScene().add(this.firstPersonControls.getObject());
@@ -186,8 +197,8 @@ export class AvatarControls {
 		this.controls.panSpeed = 1;
 		this.controls.enableZoom = true;
 		this.controls.zoomSpeed = 3;
-		this.controls.minDistance = 5;
-		this.controls.maxDistance = 20;
+		this.controls.minDistance = 10;
+		this.controls.maxDistance = 50;
 		this.controls.enableRotate = true;
 		this.controls.maxPolarAngle = Math.PI / 2.42;
 
@@ -507,18 +518,10 @@ export class AvatarControls {
 	public moveCameraToDefaultWorldView(): void {
 		this.controls.rotateSpeed = 2;
 
-		/*
 		const targetCameraPosition = new Vector3();
-		targetCameraPosition.x = -7;
-		targetCameraPosition.y = 7;
-		targetCameraPosition.z = 15;
-
-
-		 */
-		const targetCameraPosition = new Vector3();
-		targetCameraPosition.x = this.avatar.position.x - 5;
-		targetCameraPosition.y = this.avatar.position.y + 10;
-		targetCameraPosition.z = this.avatar.position.z + 10;
+		targetCameraPosition.x = this.avatar.position.x + this.worldCameraPositionOffset.x;
+		targetCameraPosition.y = this.avatar.position.y + this.worldCameraPositionOffset.y;
+		targetCameraPosition.z = this.avatar.position.z + this.worldCameraPositionOffset.z;
 
 		new TWEEN.Tween(this.camera.position)
 			.to(targetCameraPosition, 1500)
@@ -526,7 +529,7 @@ export class AvatarControls {
 
 		const targetControlsPosition = new Vector3();
 		targetControlsPosition.x = this.avatar.position.x;
-		targetControlsPosition.y = this.avatar.position.y + 3;
+		targetControlsPosition.y = this.avatar.position.y;
 		targetControlsPosition.z = this.avatar.position.z;
 
 		new TWEEN.Tween(this.controls.target)
@@ -724,7 +727,7 @@ export class AvatarControls {
 		this.controls.target = this.cameraTarget;
 		this.controls.enablePan = Vars.DEBUG_MODE;
 		this.controls.rotateSpeed = 2
-		this.controls.update();
+				this.controls.update();
 		 */
 	}
 
@@ -752,10 +755,10 @@ export class AvatarControls {
 	}
 
 	private switchToFirstPersonControl(): void {
-		const p = new Vector3();
-		this.firstPersonPoint.getWorldPosition(p)
+		const position = new Vector3();
+		this.firstPersonPoint.getWorldPosition(position)
 
-		this.camera.position.copy(p);
+		this.camera.position.copy(position);
 
 		this.firstPersonControls.lock();
 
@@ -772,16 +775,16 @@ export class AvatarControls {
 		const scene = Experience.get().getScene();
 
 		const targetCameraPosition = new Vector3();
-		targetCameraPosition.x = scene.position.x - 50;
-		targetCameraPosition.y = scene.position.y + 30;
-		targetCameraPosition.z = scene.position.z - 40;
+		targetCameraPosition.x = scene.position.x + this.sceneControlsCameraPositionOffset.x;
+		targetCameraPosition.y = scene.position.y + this.sceneControlsCameraPositionOffset.y;
+		targetCameraPosition.z = scene.position.z + this.sceneControlsCameraPositionOffset.z;
 
 		this.camera.position.copy(targetCameraPosition)
 
 		const targetControlsPosition = new Vector3();
-		targetControlsPosition.x = scene.position.x;
-		targetControlsPosition.y = scene.position.y + 3;
-		targetControlsPosition.z = scene.position.z;
+		targetControlsPosition.x = scene.position.x + this.sceneControlsPositionOffset.x;
+		targetControlsPosition.y = scene.position.y + this.sceneControlsPositionOffset.y;
+		targetControlsPosition.z = scene.position.z + this.sceneControlsPositionOffset.z;
 
 		this.controls.target.copy(targetControlsPosition);
 		this.controls.update();

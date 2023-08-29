@@ -5,7 +5,7 @@ import { Vars } from "../../../../Vars";
 export class PalmIslandLights implements IModelLights {
 
 	private readonly color = 0xffffff;
-	private readonly intensity = 2;
+	private readonly intensity = 1.7;
 
 	private readonly ambientLight: AmbientLight;
 

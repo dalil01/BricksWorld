@@ -84,6 +84,10 @@ export class PalmIsland extends Model {
 		data.defaultTranslation = new Vector3(-1, 0.7, 1);
 		data.rigidBodyRadius = 0.2;
 
+		data.worldCameraPositionOffset = new Vector3(5, 10, 10);
+		data.sceneControlsCameraPositionOffset = new Vector3(0, 0, 50);
+		data.sceneControlsPositionOffset = new Vector3(0, 5, 0);
+
 		return data;
 	}
 
