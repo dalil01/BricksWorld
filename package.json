@@ -5,8 +5,7 @@
   "description": "Three.js Journey Lego Challenge.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "generate-icons": "npx fantasticon"
+    "build": "vite build"
   },
   "repository": {
     "type": "git",
