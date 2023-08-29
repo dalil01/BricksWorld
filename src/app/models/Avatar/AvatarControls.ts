@@ -66,11 +66,11 @@ export class AvatarControls {
 
 	private walkAnimation!: AnimationAction;
 	private walkAnimationPlaying: boolean = false;
-	private walkVelocity = 8;
+	private walkVelocity = 6;
 
 	private runAnimation!: AnimationAction;
 	private runAnimationPlaying: boolean = false;
-	private runVelocity = 12;
+	private runVelocity = 10;
 
 	private jumpAnimation!: AnimationAction;
 	private jumpAnimationPlaying: boolean = false;
@@ -516,7 +516,7 @@ export class AvatarControls {
 	}
 
 	public moveCameraToDefaultWorldView(): void {
-		this.controls.rotateSpeed = 1.5;
+		this.controls.rotateSpeed = 2;
 
 		const targetCameraPosition = new Vector3();
 		targetCameraPosition.x = this.avatar.position.x + this.worldCameraPositionOffset.x;

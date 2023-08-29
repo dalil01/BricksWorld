@@ -1,6 +1,7 @@
 import gltfPlugin from "vite-plugin-gltf";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
+import {VitePWA} from "vite-plugin-pwa";
 
 export default {
     base: './',
@@ -30,6 +31,15 @@ export default {
     plugins: [
         gltfPlugin(),
         wasm(),
-        topLevelAwait()
+        topLevelAwait(),
+        VitePWA({
+            version: "1.0.0",
+            registerType: "autoUpdate",
+            workbox: {
+                clientsClaim: true,
+                skipWaiting: true,
+                cleanupOutdatedCaches: true
+            }
+        })
     ]
 }
