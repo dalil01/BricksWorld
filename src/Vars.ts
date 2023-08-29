@@ -3,6 +3,8 @@ import { WorldName } from "./app/models/World/World";
 const IMAGES_DIR = "images/";
 const MODELS_DIR = "models/";
 
+const LOGO_IMAGES_DIR = "images/logo/";
+
 const AVATAR_IMAGES_DIR = IMAGES_DIR + "avatar/";
 const AVATAR_MODELS_DIR = MODELS_DIR + "avatar/";
 
@@ -24,12 +26,13 @@ const ICONS_DIR = "./icons/";
 
 export class Vars {
 
-	public static DEBUG_MODE: boolean = false;
+	public static DEBUG_MODE: boolean = true;
 
 	public static CURRENT_WORLD: WorldName | null;
 
 	public static PATH = {
 		DRACO: "draco/",
+		LOGO: LOGO_IMAGES_DIR + "logo.png",
 		AVATAR: {
 			MODEL: AVATAR_MODELS_DIR + "Avatar.glb",
 			HAIRS: {

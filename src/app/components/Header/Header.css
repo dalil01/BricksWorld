@@ -8,22 +8,24 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 30px;
 }
 
 .header-left {
     display: flex;
     align-items: end;
+    height: 85px;
 }
 
 .header-logo {
-    font-size: 1.5rem;
-
+    width: 6rem;
+    height: 3.4rem;
 }
 
 .header-current-world-name {
     margin-left: 10px;
     font-weight: 500;
-    font-size: 1rem;
+    font-size: .92rem;
 }
 
 .header-right {

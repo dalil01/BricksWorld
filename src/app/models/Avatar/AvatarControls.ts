@@ -192,7 +192,7 @@ export class AvatarControls {
 
 		// console.log(this.controls.rotateSpeed)
 
-		this.controls.enableDamping = true;
+		this.controls.enableDamping = false;
 		this.controls.enablePan = true;
 		this.controls.panSpeed = 1;
 		this.controls.enableZoom = true;
@@ -516,7 +516,7 @@ export class AvatarControls {
 	}
 
 	public moveCameraToDefaultWorldView(): void {
-		this.controls.rotateSpeed = 2;
+		this.controls.rotateSpeed = 1.5;
 
 		const targetCameraPosition = new Vector3();
 		targetCameraPosition.x = this.avatar.position.x + this.worldCameraPositionOffset.x;

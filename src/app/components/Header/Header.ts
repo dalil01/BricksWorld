@@ -24,7 +24,7 @@ export class Header extends Component {
 	protected buildUI(): void {
 		const leftContainer = UDom.div({ className: HEADER_CSS.LEFT });
 
-		const logo = UDom.h1({ className: HEADER_CSS.LOGO, innerText: "BricksWorld" });
+		const logo = UDom.img({ src: Vars.PATH.LOGO, className: HEADER_CSS.LOGO });
 		leftContainer.appendChild(logo);
 
 		if (Vars.CURRENT_WORLD) {

@@ -2,9 +2,11 @@ import "./Loader.css";
 
 import { Component } from "../Component";
 import { UDom } from "../../utils/UDom";
+import { Vars } from "../../../Vars";
 
 enum LOADER_CSS {
-	CONTAINER = "loader-container"
+	CONTAINER = "loader-container",
+	LOADER = "loader"
 }
 
 /**
@@ -19,14 +21,12 @@ export class Loader extends Component {
 
 
 	protected buildUI(): void {
-		const text = UDom.p({ innerText: "Loading..." });
-
-
-		this.mainElement.appendChild(text);
+		const logo = UDom.img({ src: Vars.PATH.LOGO });
+		this.mainElement.appendChild(logo);
 	}
 
 	public show(): void {
-		this.mainElement.style.display = "block";
+		this.mainElement.style.display = "flex";
 	}
 
 	public hide(): void {
